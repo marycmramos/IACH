@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Secrets
+.env
+.env.*
+!.env.example
+*.key
+secrets.json
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Local data and generated outputs
+data/
+datasets/
+outputs/
+patient_state*.json
+
+# IDE
+.vscode/
+.idea/
+
+# Operating system
+.DS_Store
+Thumbs.db
