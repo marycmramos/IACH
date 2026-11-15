@@ -1,0 +1,41 @@
+{
+  "metrics": {
+    "n": 331,
+    "deaths": 16,
+    "prevalence": 0.04833836858006042,
+    "roc_auc": 0.7132936507936508,
+    "pr_auc": 0.18430032734118165,
+    "brier": 0.04410536786383463,
+    "mean_predicted_probability": 0.04069454635506119
+  },
+  "bootstrap_95": {
+    "roc_auc": {
+      "lower_95": 0.5856576595159516,
+      "upper_95": 0.8399743592070867
+    },
+    "pr_auc": {
+      "lower_95": 0.0636445925068066,
+      "upper_95": 0.3741237645494114
+    },
+    "brier": {
+      "lower_95": 0.02542707396593831,
+      "upper_95": 0.0651507964680243
+    }
+  },
+  "threshold_experiment": {
+    "chosen_on_training_oof": 0.03,
+    "target_sensitivity": 0.7,
+    "test_descriptive": {
+      "threshold": 0.03,
+      "tp": 10,
+      "fp": 124,
+      "tn": 191,
+      "fn": 6,
+      "sensitivity": 0.625,
+      "specificity": 0.6063492063492063,
+      "precision": 0.07462686567164178
+    },
+    "note": "Limiar experimental selecionado só na validação cruzada."
+  },
+  "warning": "Teste exploratório; nenhuma calibração nem otimização foi feita no teste."
+}

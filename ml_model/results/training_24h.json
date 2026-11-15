@@ -1,0 +1,47 @@
+{
+  "parameters": {
+    "n_estimators": 220,
+    "max_depth": 2,
+    "learning_rate": 0.03,
+    "class_factor": 1.0
+  },
+  "cv_folds": [
+    {
+      "n": 437,
+      "deaths": 21,
+      "prevalence": 0.04805491990846682,
+      "roc_auc": 0.8082074175824177,
+      "pr_auc": 0.22370196306174275,
+      "brier": 0.04309275517298573,
+      "mean_probability": 0.046663694136170775
+    },
+    {
+      "n": 434,
+      "deaths": 21,
+      "prevalence": 0.04838709677419355,
+      "roc_auc": 0.7043698835466391,
+      "pr_auc": 0.14229946378402386,
+      "brier": 0.045875646483669964,
+      "mean_probability": 0.037944859983066896
+    },
+    {
+      "n": 424,
+      "deaths": 21,
+      "prevalence": 0.049528301886792456,
+      "roc_auc": 0.7916814368427272,
+      "pr_auc": 0.3251905211770201,
+      "brier": 0.04067072656985476,
+      "mean_probability": 0.05025454533378646
+    }
+  ],
+  "test": {
+    "n": 331,
+    "deaths": 16,
+    "prevalence": 0.04833836858006042,
+    "roc_auc": 0.7132936507936508,
+    "pr_auc": 0.18430032734118165,
+    "brier": 0.044105367863834635,
+    "mean_probability": 0.04069454635506119
+  },
+  "warning": "Teste explorat\u00f3rio; modelo n\u00e3o validado para utiliza\u00e7\u00e3o cl\u00ednica."
+}

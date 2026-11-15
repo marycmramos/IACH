@@ -5,9 +5,9 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parent.parent
 PROCESSED_DIR = ROOT / "processed_data"
 DATA_DIR = ROOT / "data"
-OUTPUT_FILE = ROOT / "ml_model" / "ml_features_dynamic.csv"
+OUTPUT_FILE = ROOT / "ml_model" / "ml_features_24h.csv"
 
-PREDICTION_HOURS = [12, 16, 20, 24]
+PREDICTION_HOURS = [24]
 
 PERIODIC_SIGNALS = {
     "heartrate": "hr",
@@ -32,7 +32,7 @@ LAB_FEATURES = [
     for lab in LAB_NAMES
     for stat in ["first", "mean", "min", "max", "last"]
 ]
-FEATURES = CLINICAL_FEATURES + VITAL_FEATURES + LAB_FEATURES + ["prediction_hour"]
+FEATURES = CLINICAL_FEATURES + VITAL_FEATURES + LAB_FEATURES
 
 def read_csv(path, required_columns):
     if not path.is_file():
@@ -180,23 +180,18 @@ def main():
         dataset[col] = pd.to_numeric(dataset[col], errors="coerce")
 
     dataset = dataset[
-        ["patientunitstayid", "uniquepid", "prediction_hour",
-         "target_icu", *[col for col in FEATURES if col != "prediction_hour"]]
+        ["patientunitstayid", "uniquepid", "target_icu", *FEATURES]
     ]
     dataset = dataset.sort_values(
-        ["patientunitstayid", "prediction_hour"]
+        ["patientunitstayid"]
     ).reset_index(drop=True)
 
-    if dataset.duplicated(["patientunitstayid", "prediction_hour"]).any():
+    if dataset["patientunitstayid"].duplicated().any():
         raise ValueError("Existem avaliações duplicadas")
 
     OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
     dataset.to_csv(OUTPUT_FILE, index=False)
-
-    summary = dataset.groupby("prediction_hour").agg(
-        avaliacoes=("target_icu", "size"),
-        mortes=("target_icu", "sum")
-    )
+    
     print(f"\nDataset criado: {OUTPUT_FILE}")
     print(
         f"{len(dataset)} avaliações | "
@@ -204,8 +199,8 @@ def main():
         f"{dataset['uniquepid'].nunique()} pacientes | "
         f"{len(FEATURES)} features"
     )
-    print("\nAvaliações por momento:")
-    print(summary.to_string())
+    print(f"Mortes: {dataset['target_icu'].sum()}")
 
+    
 if __name__ == "__main__":
     main()
