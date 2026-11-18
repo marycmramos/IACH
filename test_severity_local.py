@@ -1,6 +1,6 @@
 
 import pandas as pd
-from severity_agent import run_severity_agent
+from agents.severity.agent import run_severity_agent
 from ml_model.predict import load_model
 
 PATIENT_ID = 156906
