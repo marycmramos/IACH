@@ -12,7 +12,7 @@ import requests
 from dotenv import load_dotenv
 from pydantic import BaseModel, ConfigDict, ValidationError
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parents[2]
 if not (ROOT / "ml_model" / "predict.py").is_file():
     raise FileNotFoundError("Cannot find ml_model/predict.py in the project root.")
 if str(ROOT) not in sys.path:
