@@ -31,3 +31,7 @@ patient_state*.json
 # Operating system
 .DS_Store
 Thumbs.db
+
+# Jupyter notebooks
+notebooks/
+.ipynb_checkpoints/
