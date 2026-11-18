@@ -26,28 +26,60 @@ print("Projeto:", ROOT)
 print("IAedu configurada:", all(os.getenv(x) for x in ("IAEDU_API_ENDPOINT", "IAEDU_CHANNEL_ID", "IAEDU_API_KEY")))
 
 def compare_apache(ml_probability, apache_result):
-    if apache_result is None:
-        return {"status": "unavailable", "reason": "APACHE result not provided"}
+    """Descriptively contrast XGBoost with APACHE IV and IVa ICU mortality.
+
+    Input comes from apache_loader.load_apache(patient_id), NOT from labels.
+    The APACHE estimates may target a different population/time origin, so
+    differences are not evidence of formal model agreement or calibration.
+    """
+    if apache_result is None or apache_result == {}:
+        return {"status": "unavailable", "reason": "APACHE results not provided",
+                "versions": {}}
     if not isinstance(apache_result, dict):
         raise TypeError("apache_result must be a dictionary or None")
 
-    score = apache_result.get("score")
-    p = apache_result.get("mortality_probability")
-    if p is None:
-        return {"status": "not_comparable", "apache_score": score,
-                "reason": "No APACHE mortality probability provided"}
-    if isinstance(p, bool) or not isinstance(p, (int, float)) or not math.isfinite(p) or not 0 <= p <= 1:
-        raise ValueError("APACHE mortality_probability must be finite and between 0 and 1")
-    if apache_result.get("outcome") != OUTCOME or apache_result.get("prediction_hour") != 24:
-        return {"status": "not_comparable", "apache_score": score,
-                "apache_probability": float(p),
-                "reason": "APACHE outcome or prediction time is not confirmed as comparable"}
+    # apache_loader returns {"IV": {...}, "IVa": {...}}.
+    unexpected = set(apache_result) - {"IV", "IVa"}
+    if unexpected:
+        raise ValueError(f"Unknown APACHE versions: {sorted(unexpected)}")
+    versions = {}
+    for version in ("IV", "IVa"):
+        row = apache_result.get(version)
+        if row is None:
+            continue
+        if not isinstance(row, dict):
+            raise TypeError(f"APACHE {version} result must be a dictionary")
+        if row.get("version", version) != version:
+            raise ValueError(f"APACHE version mismatch for {version}")
+        probability = row.get("mortality_probability")
+        if probability is None:
+            versions[version] = {"status": "unavailable", "apache_score": row.get("score"),
+                                 "reason": "Predicted ICU mortality is missing"}
+            continue
+        if (isinstance(probability, bool) or not isinstance(probability, (int, float))
+                or not math.isfinite(probability) or not 0 <= probability <= 1):
+            raise ValueError(f"Invalid APACHE {version} mortality probability")
+        difference = float(ml_probability - probability)
+        versions[version] = {
+            "status": "descriptive", "apache_score": row.get("score"),
+            "apache_probability": float(probability),
+            "ml_probability": float(ml_probability),
+            "difference": difference,
+            "absolute_difference": abs(difference),
+            "difference_percentage_points": difference * 100,
+            "absolute_difference_percentage_points": abs(difference) * 100,
+        }
 
-    delta = float(ml_probability - p)
-    return {"status": "comparable", "apache_score": score,
-            "apache_probability": float(p), "ml_probability": float(ml_probability),
-            "difference": delta, "absolute_difference": abs(delta),
-            "note": "Descriptive comparison only; does not establish clinical agreement"}
+    valid = any(v["status"] == "descriptive" for v in versions.values())
+    return {
+        "status": "descriptive" if valid else "unavailable",
+        "versions": versions,
+        "note": (
+            "Descriptive comparison of predicted ICU mortality estimates only. "
+            "APACHE IV/IVa and this 24h XGBoost may differ in prediction timing "
+            "and target population; this does not establish clinical agreement."
+        ) if valid else "No usable APACHE ICU mortality estimate was provided",
+    }
 
 SYSTEM_PROMPT = """You are the technical analysis component of the IACH Severity Agent, an academic ICU research prototype.
 Use ONLY the supplied numerical ML/SHAP/APACHE results and validated agent observations.
@@ -56,7 +88,7 @@ Do not change, recalculate or replace XGBoost probabilities, SHAP values or APAC
 Do not diagnose, recommend treatment, assert causality or claim clinical validation.
 SHAP contributions are in log-odds, not direct probability-point differences.
 Never claim an imputed feature is a measured clinical value.
-Use caution with sparse data; if APACHE is absent or not comparable, state that explicitly.
+Use caution with sparse data. APACHE IV and IVa must be discussed separately. Their predictions are descriptive reference estimates, not proven directly comparable with XGBoost because time origin and target population may differ. If absent, state that explicitly.
 Explain important SHAP directions using the supplied values and cite the relevant feature names.
 No patient identifiers or invented measurements, reference ranges, thresholds or clinical facts.
 Return ONLY a valid JSON object with exactly these keys:
@@ -230,8 +262,10 @@ def run_severity_agent(severity_input, llm_client=iaedu_llm_client):
     absent_agents = [name for name in AGENTS if name not in results]
     if absent_agents:
         warnings.append(f"Missing agent outputs: {', '.join(absent_agents)}")
-    if comparison["status"] != "comparable":
+    if comparison["status"] == "unavailable":
         warnings.append("Quantitative APACHE comparison unavailable")
+    else:
+        warnings.append("APACHE comparison is descriptive; different timing and target populations may apply")
 
     llm_result = {"status": "not_run", "assessment": None}
     if llm_client is not None:

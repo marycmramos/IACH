@@ -200,12 +200,11 @@ def load_ml_features(patient_id: int) -> dict:
     }
 
 
-def run_orchestrator(patient_id: int, severity_runner=None,
-                     clean_data_loader=None, apache_result=None) -> dict:
-    """Run three Data Agents; run severity only when all three succeeded.
+def run_orchestrator(patient_id: int) -> dict:
+    """Run the three Data Agents and automatically assess severity.
 
-    severity_runner is optional to preserve original notebook behavior.
-    Provide run_severity_agent and load_ml_features to enable it.
+    Severity runs only when all three Data Agents succeed. APACHE IV/IVa
+    results are optional, but ML features and the trained model are required.
     """
     if isinstance(patient_id, bool) or not isinstance(patient_id, int) or patient_id <= 0:
         raise ValueError("patient_id must be a positive integer")
@@ -213,8 +212,11 @@ def run_orchestrator(patient_id: int, severity_runner=None,
     print(f"\n=== IACH | Patient {patient_id} ===")
     agents = {name: get_or_run_agent(name, patient_id) for name in AGENT_CONFIG}
     statuses = [result["status"] for result in agents.values()]
-    all_success = all(s == "success" for s in statuses)
-    overall_status = "success" if all_success else "error" if all(s == "error" for s in statuses) else "partial"
+    all_success = all(status == "success" for status in statuses)
+    overall_status = (
+        "success" if all_success else
+        "error" if all(status == "error" for status in statuses) else "partial"
+    )
     state = {
         "patientunitstayid": patient_id,
         "status": overall_status,
@@ -228,16 +230,23 @@ def run_orchestrator(patient_id: int, severity_runner=None,
     if not all_success:
         print("[STOP] Data Agents incomplete; severity not run")
         return state
-    if severity_runner is None:
-        print("[READY] Data available for Severity Agent")
-        return state
-    if clean_data_loader is None:
-        raise ValueError("clean_data_loader is required for severity")
 
     try:
-        features = clean_data_loader(patient_id)
+        from agents.severity.severity_agent import run_severity_agent
+        from agents.severity.apache_loader import load_apache
+
+        features = load_ml_features(patient_id)
         if not isinstance(features, dict) or not features:
             raise ValueError("Missing or invalid ML features")
+
+        # No APACHE record or no local source file should not block XGBoost.
+        # Other failures are surfaced rather than silently treated as missing data.
+        try:
+            apache_result = load_apache(patient_id)
+        except FileNotFoundError:
+            apache_result = None
+            print("[WARN] APACHE file unavailable; proceeding without comparison")
+
         severity_input = {
             "patientunitstayid": patient_id,
             "features": features,
@@ -245,14 +254,16 @@ def run_orchestrator(patient_id: int, severity_runner=None,
             "apache_result": apache_result,
         }
         print("[RUN] Severity Agent")
-        severity = to_jsonable(severity_runner(severity_input))
+        severity = to_jsonable(run_severity_agent(severity_input))
         if not isinstance(severity, dict) or severity.get("status") != "success":
             raise ValueError("Severity Agent did not complete successfully")
         if str(severity.get("patientunitstayid")) != str(patient_id):
             raise ValueError("Severity Agent returned a different patient ID")
         state["severity"] = severity
         save_json(patient_folder(patient_id) / "severity.json", {
-            "patientunitstayid": patient_id, "result": severity, "created_at": now()
+            "patientunitstayid": patient_id,
+            "result": severity,
+            "created_at": now(),
         })
         print("[OK] Severity assessment completed")
     except Exception as exc:
@@ -265,20 +276,15 @@ def run_orchestrator(patient_id: int, severity_runner=None,
 
 
 def run_full_pipeline(patient_id: int) -> dict:
-    """Run all four agents; the fourth uses XGBoost/SHAP and optionally IAedu."""
-    from agents.severity.severity_agent import run_severity_agent
-    return run_orchestrator(patient_id, severity_runner=run_severity_agent,
-                            clean_data_loader=load_ml_features)
+    """Backward-compatible entry point; all agents now run by default."""
+    return run_orchestrator(patient_id)
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="IACH research orchestrator")
     parser.add_argument("patient_id", type=int, help="eICU patientunitstayid")
-    parser.add_argument("--with-severity", action="store_true",
-                        help="Also run XGBoost/SHAP Severity Agent")
     args = parser.parse_args()
-    result = (run_full_pipeline(args.patient_id) if args.with_severity
-              else run_orchestrator(args.patient_id))
+    result = run_orchestrator(args.patient_id)
     print(json.dumps({
         "patientunitstayid": result["patientunitstayid"],
         "status": result["status"],

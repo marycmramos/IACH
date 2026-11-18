@@ -35,3 +35,7 @@ Thumbs.db
 # Jupyter notebooks
 notebooks/
 .ipynb_checkpoints/
+
+.coverage
+
+htmlcov/
