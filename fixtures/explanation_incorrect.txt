@@ -1,0 +1,1 @@
+The XGBoost model mortality risk is 25.4%. The measured BUN_max was 21. The elevated respiratory rate caused a higher mortality risk. The XGBoost model is clinically superior to APACHE IV.
