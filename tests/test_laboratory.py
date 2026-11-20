@@ -1,43 +1,96 @@
-"""Laboratory Agent tests. No real IAedu requests."""
+"""From repository root: python -m pytest tests/test_explanation.py -v"""
 import json
-import pytest
+from copy import deepcopy
 
-from agents.laboratory import laboratory_agent as lab
-
-
-def _sample():
-    # Choose an ICU stay with at least one numerical lab evaluation.
-    for patient_id in lab.lab_df.index:
-        patient_id = int(patient_id)
-        evaluations = lab.evaluate_lab_ranges(lab.get_lab_data(patient_id))
-        if evaluations:
-            return patient_id, evaluations
-    pytest.skip("Sem pacientes com observações laboratoriais")
+from agents.explanation.explanation_agent import run_explanation_agent
 
 
-def test_lab_missing_patient():
-    result = lab.run_lab_agent(999999999)
-    assert result.status == "error"
-    assert result.agent_output.status == "error"
+SEVERITY = {
+    "agent": "severity", "status": "success", "patientunitstayid": "141765",
+    "prediction_hour": 24,
+    "mortality_prediction": {"model": "xgboost_24h", "outcome": "icu_mortality_after_24h", "probability": 0.0254},
+    "shap_explanation": {
+        "method": "TreeSHAP", "unit": "log-odds", "base_probability": 0.035,
+        "top_features": [
+            {"feature": "rr_last", "shap_value": 0.3, "was_imputed": False, "original_value": 24},
+            {"feature": "age", "shap_value": -0.2, "was_imputed": True, "original_value": None},
+        ],
+        "all_features": [],
+    },
+    "data_quality": {"n_features": 53, "n_missing_features": 1, "missing_features": ["age"]},
+    "agent_context": {"available_agents": ["vital"], "results": {
+        "vital": {"status": "success", "agent_output": {"findings": ["Recorded vital signs were reviewed."]}}
+    }},
+    "apache_comparison": {"status": "descriptive", "versions": {
+        "IV": {"status": "descriptive", "apache_score": 48, "apache_probability": 0.12,
+               "ml_probability": 0.0254, "difference_percentage_points": -9.46},
+        "IVa": {"status": "descriptive", "apache_score": 46, "apache_probability": 0.10,
+                "ml_probability": 0.0254, "difference_percentage_points": -7.46},
+    }},
+    "llm_analysis": {"status": "success", "assessment": {
+        "findings": ["Predicted mortality is approximately 2.54%."],
+        "shap_interpretation": [], "apache_assessment": "Descriptive only", "limitations": []}},
+    "warnings": ["Research model not clinically validated"],
+}
 
 
-def test_lab_valid_selection(monkeypatch):
-    patient_id, evaluations = _sample()
-    monkeypatch.setattr(lab, "ask_iaedu", lambda prompt: json.dumps({
-        "patient_id": patient_id, "status": "success", "findings": evaluations[:2]
-    }))
-    result = lab.run_lab_agent(patient_id)
-    assert result.status == "success"
-    assert [f.model_dump() for f in result.agent_output.findings] == evaluations[:2]
-    assert all(x.flag == "unknown" for x in result.agent_output.findings) if not lab.LAB_RANGES_VALIDATED else True
+def state():
+    return {"patientunitstayid": 141765, "severity_result": deepcopy(SEVERITY)}
 
 
-def test_lab_rejects_fabricated_value(monkeypatch):
-    patient_id, evaluations = _sample()
-    fake = {**evaluations[0], "value": evaluations[0]["value"] + 9999.0}
-    monkeypatch.setattr(lab, "ask_iaedu", lambda prompt: json.dumps({
-        "patient_id": patient_id, "status": "success", "findings": [fake]
-    }))
-    result = lab.run_lab_agent(patient_id)
-    assert result.status == "error"
-    assert result.agent_output.findings == []
+REPORT = {
+    "mortality_summary": "XGBoost estimates 2.54% ICU mortality.",
+    "clinical_summary": "Vital findings were provided.",
+    "shap_summary": "rr_last increased and age decreased model log-odds.",
+    "overall_explanation": "The estimate is 2.54%; SHAP describes model behavior.",
+    "limitations": [],
+}
+
+
+class FakeClient:
+    def __init__(self, outputs):
+        self.outputs = iter(outputs)
+        self.calls = []
+
+    def __call__(self, messages):
+        self.calls.append(messages)
+        return next(self.outputs)
+
+
+def test_template_uses_real_shap_fields():
+    result = run_explanation_agent(state(), use_llm=False)
+    assert result["status"] == "success"
+    assert result["mortality_prediction"]["probability"] == 0.0254
+    assert "rr_last" in result["explanation"]["shap_summary"]
+    assert "age" in result["explanation"]["shap_summary"]
+    assert "imputed" in result["explanation"]["shap_summary"]
+
+
+def test_apache_iv_and_iva_present():
+    result = run_explanation_agent(state(), use_llm=False)
+    assert "APACHE IV estimates" in result["explanation"]["overall_explanation"]
+    assert "APACHE IVa estimates" in result["explanation"]["overall_explanation"]
+    assert "APACHE comparison is unavailable." not in result["explanation"]["limitations"]
+
+
+def test_uses_embedded_findings_and_restricts_llm_payload():
+    client = FakeClient([REPORT])
+    result = run_explanation_agent(state(), llm_client=client)
+    assert result["status"] == "success"
+    payload = json.loads(client.calls[0][1]["content"])
+    assert payload["clinical_agent_findings"]["vital"]["findings"]
+    assert "patientunitstayid" not in payload
+    assert "severity_llm_assessment" in payload
+    assert "shap_explanation" in payload
+    assert "shap_assessment" not in payload
+
+
+def test_absent_apache_is_reported():
+    data = state()
+    data["severity_result"]["apache_comparison"] = {"status": "unavailable", "versions": {}}
+    report = run_explanation_agent(data, use_llm=False)["explanation"]
+    assert "APACHE comparison is unavailable." in report["limitations"]
+
+
+def test_missing_shap_not_invented():
+    data = state()

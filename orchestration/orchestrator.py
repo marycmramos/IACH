@@ -266,6 +266,53 @@ def run_orchestrator(patient_id: int) -> dict:
             "created_at": now(),
         })
         print("[OK] Severity assessment completed")
+
+        # Run Explanation Agent after Severity
+        try:
+            from agents.explanation.explanation_agent import run_explanation_agent
+
+            explanation_input = {
+                "patientunitstayid": patient_id,
+                "severity_result": severity,
+                "agent_results": {
+                    name: result["data"]
+                    for name, result in agents.items()
+                }
+            }
+
+            print("[RUN] Explanation Agent")
+
+            explanation = to_jsonable(
+                run_explanation_agent(
+                    explanation_input,
+                    use_llm=True
+                )
+            )
+
+            if explanation.get("status") != "success":
+                raise ValueError(
+                    f"Explanation Agent failed: {explanation.get('error')}"
+                )
+
+            state["explanation"] = explanation
+
+            save_json(
+                patient_folder(patient_id) / "explanation.json",
+                {
+                    "patientunitstayid": patient_id,
+                    "result": explanation,
+                    "created_at": now()
+                }
+            )
+
+            print("[OK] Explanation Agent completed")
+
+        except Exception as exc:
+            state["status"] = "partial"
+            state["explanation_error"] = (
+                f"{type(exc).__name__}: {str(exc)[:350]}"
+            )
+            print(f"[ERROR] Explanation Agent: {state['explanation_error']}")
     except Exception as exc:
         state["status"] = "partial"
         state["severity_error"] = f"{type(exc).__name__}: {str(exc)[:350]}"
@@ -292,6 +339,8 @@ def main() -> None:
         "agents": {name: entry["status"] for name, entry in result["agents"].items()},
         "severity": result.get("severity", {}).get("status", "not_run"),
         "severity_error": result.get("severity_error"),
+        "explanation": result.get("explanation", {}).get("status", "not_run"),
+        "explanation_error": result.get("explanation_error"),
     }, ensure_ascii=False, indent=2))
 
 
