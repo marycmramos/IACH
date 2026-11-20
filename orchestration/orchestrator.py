@@ -1,8 +1,8 @@
-"""IACH orchestration: run the three Data Agents, cache results, optionally run severity.
+"""IACH orchestration: Data Agents, Severity, Explanation and Critic revisions.
 
 Run from the project root:
     python -m orchestration.orchestrator 148611
-    python -m orchestration.orchestrator 148611 --with-severity
+    python -m orchestration.orchestrator 148611 --max-revisions 2
 
 This is an academic prototype, not a clinically validated decision tool.
 """
@@ -10,10 +10,12 @@ This is an academic prototype, not a clinically validated decision tool.
 from __future__ import annotations
 
 import argparse
+from copy import deepcopy
 import hashlib
 import importlib
 import json
 import math
+import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -200,14 +202,42 @@ def load_ml_features(patient_id: int) -> dict:
     }
 
 
-def run_orchestrator(patient_id: int) -> dict:
-    """Run the three Data Agents and automatically assess severity.
 
-    Severity runs only when all three Data Agents succeed. APACHE IV/IVa
-    results are optional, but ML features and the trained model are required.
+def explanation_to_critic_text(explanation_result: dict, patient_id: int) -> str:
+    """Render every report section for the current text-based Critic contract.
+
+    The original structured Explanation result is preserved separately. Refuse
+    incomplete results rather than allowing the Critic to approve partial text.
+    """
+    if not isinstance(explanation_result, dict) or explanation_result.get("status") != "success":
+        raise ValueError("A successful Explanation Agent result is required")
+    if str(explanation_result.get("patientunitstayid")) != str(patient_id):
+        raise ValueError("Explanation Agent returned a different patient ID")
+    report = explanation_result.get("explanation")
+    if not isinstance(report, dict):
+        raise ValueError("Explanation report must be a dictionary")
+    names = ("mortality_summary", "clinical_summary", "shap_summary", "overall_explanation")
+    for name in names:
+        if not isinstance(report.get(name), str) or not report[name].strip():
+            raise ValueError(f"Missing or empty Explanation section: {name}")
+    limitations = report.get("limitations")
+    if not isinstance(limitations, list) or any(not isinstance(x, str) or not x.strip() for x in limitations):
+        raise ValueError("Invalid Explanation limitations")
+    sections = [f"{name}:\n{report[name].strip()}" for name in names]
+    sections.append("limitations:\n" + ("\n".join(f"- {x.strip()}" for x in limitations) if limitations else "None supplied"))
+    return "\n\n".join(sections)
+
+
+def run_orchestrator(patient_id: int, max_revisions: int = 2) -> dict:
+    """Run data analysis, severity, explanation, and Critic-controlled revisions.
+
+    max_revisions is the number of correction rounds *after* initial generation.
+    Human review is always required before clinical interpretation.
     """
     if isinstance(patient_id, bool) or not isinstance(patient_id, int) or patient_id <= 0:
         raise ValueError("patient_id must be a positive integer")
+    if isinstance(max_revisions, bool) or not isinstance(max_revisions, int) or not 0 <= max_revisions <= 10:
+        raise ValueError("max_revisions must be an integer from 0 to 10")
 
     print(f"\n=== IACH | Patient {patient_id} ===")
     agents = {name: get_or_run_agent(name, patient_id) for name in AGENT_CONFIG}
@@ -273,7 +303,9 @@ def run_orchestrator(patient_id: int) -> dict:
 
             explanation_input = {
                 "patientunitstayid": patient_id,
-                "severity_result": severity,
+                # Explanation normalizes SHAP units in place; isolate its input
+                # so Critic still receives the authoritative Severity output.
+                "severity_result": deepcopy(severity),
                 "agent_results": {
                     name: result["data"]
                     for name, result in agents.items()
@@ -294,18 +326,136 @@ def run_orchestrator(patient_id: int) -> dict:
                     f"Explanation Agent failed: {explanation.get('error')}"
                 )
 
+            # Never leave a stale approval from a previous pipeline run.
+            # Historical reviews are kept in their per-run directories.
+            (patient_folder(patient_id) / "critic.json").unlink(missing_ok=True)
+
+            # Preserve the initial result even if Critic is unavailable.
             state["explanation"] = explanation
+            save_json(patient_folder(patient_id) / "explanation.json", {
+                "patientunitstayid": patient_id, "result": explanation, "created_at": now(),
+            })
 
-            save_json(
-                patient_folder(patient_id) / "explanation.json",
-                {
-                    "patientunitstayid": patient_id,
-                    "result": explanation,
-                    "created_at": now()
-                }
-            )
+            # Every round is persisted individually. A new pipeline run gets its
+            # own directory, so previous histories are never silently overwritten.
+            from agents.critic.critic_agent import run_critic_agent
 
-            print("[OK] Explanation Agent completed")
+            run_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ") + "_" + uuid.uuid4().hex[:8]
+            revision_dir = patient_folder(patient_id) / "revision_runs" / run_id
+            history = []
+            critic = None
+            previous_report = None
+            feedback = None
+            stop_reason = None
+            for round_index in range(max_revisions + 1):
+                if round_index:
+                    print(f"[RUN] Explanation revision {round_index}")
+                    revision_input = deepcopy(explanation_input)
+                    explanation = to_jsonable(run_explanation_agent(
+                        revision_input, use_llm=True,
+                        revision_context={
+                            "previous_explanation": previous_report,
+                            "issues": feedback,
+                        },
+                    ))
+                    if not isinstance(explanation, dict) or explanation.get("status") != "success":
+                        stop_reason = "explanation_revision_error"
+                        state["explanation_error"] = "Explanation revision failed"
+                        break
+                    if str(explanation.get("patientunitstayid")) != str(patient_id):
+                        stop_reason = "explanation_revision_error"
+                        state["explanation_error"] = "Explanation revision returned a different patient ID"
+                        break
+                    if explanation.get("explanation") == previous_report:
+                        stop_reason = "unchanged_revision"
+                        # Keep the produced revision for audit, but do not waste
+                        # an LLM review of an identical report.
+                        save_json(revision_dir / f"round_{round_index:02d}.json", {
+                            "round": round_index,
+                            "explanation": explanation,
+                            "critic": None,
+                            "stop_reason": stop_reason,
+                            "created_at": now(),
+                        })
+                        break
+
+                explanation_text = explanation_to_critic_text(explanation, patient_id)
+                print("[RUN] Critic Agent" if round_index == 0 else f"[RUN] Critic revision {round_index}")
+                try:
+                    reviewed = to_jsonable(run_critic_agent({
+                        "patientunitstayid": patient_id,
+                        "severity_result": severity,
+                        "explanation_text": explanation_text,
+                    }))
+                    if not isinstance(reviewed, dict) or reviewed.get("status") not in {
+                        "approved", "needs_revision", "review_error"
+                    } or str(reviewed.get("patientunitstayid")) != str(patient_id):
+                        raise ValueError("Critic Agent returned an invalid result")
+                    if reviewed.get("approved") is not (reviewed["status"] == "approved"):
+                        raise ValueError("Critic status and approved flag disagree")
+                except Exception as exc:
+                    stop_reason = "critic_error"
+                    state["critic_error"] = f"{type(exc).__name__}: {str(exc)[:350]}"
+                    print(f"[ERROR] Critic Agent: {state['critic_error']}")
+                    save_json(revision_dir / f"round_{round_index:02d}.json", {
+                        "round": round_index,
+                        "explanation": explanation,
+                        "critic": None,
+                        "stop_reason": stop_reason,
+                        "created_at": now(),
+                    })
+                    break
+
+                critic = reviewed
+                state["explanation"] = explanation
+                state["critic"] = critic
+                history.append({
+                    "round": round_index,
+                    "critic_status": critic["status"],
+                    "issue_count": len(critic.get("issues") or []),
+                })
+                save_json(revision_dir / f"round_{round_index:02d}.json", {
+                    "round": round_index,
+                    "explanation": explanation,
+                    "critic": critic,
+                    "created_at": now(),
+                })
+                print(f"[OK] Critic review: {critic['status']}")
+                if critic["status"] == "approved":
+                    stop_reason = "approved"
+                    break
+                if critic["status"] == "review_error":
+                    stop_reason = "review_error"
+                    break
+                if round_index >= max_revisions:
+                    stop_reason = "revision_limit_reached"
+                    break
+                feedback = critic.get("issues") or []
+                if not feedback:
+                    stop_reason = "missing_revision_feedback"
+                    break
+                previous_report = deepcopy(explanation["explanation"])
+
+            state["review_cycle"] = {
+                "run_id": run_id,
+                "history": history,
+                "revisions_used": max(0, len(history) - 1),
+                "max_revisions": max_revisions,
+                "stop_reason": stop_reason,
+                "human_review_required": True,
+                "history_path": str(revision_dir.relative_to(ROOT)),
+            }
+            # Top-level outputs represent the latest *reviewed* report, not
+            # an unreviewed failed or unchanged revision.
+            if critic is not None:
+                save_json(patient_folder(patient_id) / "critic.json", {
+                    "patientunitstayid": patient_id, "result": critic, "created_at": now(),
+                })
+                save_json(patient_folder(patient_id) / "explanation.json", {
+                    "patientunitstayid": patient_id, "result": state["explanation"], "created_at": now(),
+                })
+            if critic is None or critic.get("status") != "approved" or stop_reason != "approved":
+                state["status"] = "partial"
 
         except Exception as exc:
             state["status"] = "partial"
@@ -330,8 +480,9 @@ def run_full_pipeline(patient_id: int) -> dict:
 def main() -> None:
     parser = argparse.ArgumentParser(description="IACH research orchestrator")
     parser.add_argument("patient_id", type=int, help="eICU patientunitstayid")
+    parser.add_argument("--max-revisions", type=int, default=2, help="Maximum automatic Critic-driven revisions (0-10)")
     args = parser.parse_args()
-    result = run_orchestrator(args.patient_id)
+    result = run_orchestrator(args.patient_id, max_revisions=args.max_revisions)
     print(json.dumps({
         "patientunitstayid": result["patientunitstayid"],
         "status": result["status"],
@@ -341,6 +492,9 @@ def main() -> None:
         "severity_error": result.get("severity_error"),
         "explanation": result.get("explanation", {}).get("status", "not_run"),
         "explanation_error": result.get("explanation_error"),
+        "critic": result.get("critic", {}).get("status", "not_run"),
+        "critic_error": result.get("critic_error"),
+        "review_cycle": result.get("review_cycle"),
     }, ensure_ascii=False, indent=2))
 
 
