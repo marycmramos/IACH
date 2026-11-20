@@ -85,8 +85,11 @@ def _validate_shap(shap: Any) -> None:
         return
     if not isinstance(shap, dict):
         raise ValueError("shap_explanation must be an object")
-    if shap.get("unit") not in (None, "log-odds"):
-        raise ValueError("Unsupported SHAP unit; expected log-odds")
+    unit = shap.get("unit")
+    if unit in ("log_odds", "log-odds"):
+        shap["unit"] = "log-odds"
+    elif unit is not None:
+        raise ValueError(f"Unsupported SHAP unit: {unit!r}; expected log-odds")
     if shap.get("base_probability") is not None:
         _probability(shap["base_probability"], "SHAP base_probability")
     top = shap.get("top_features", [])
