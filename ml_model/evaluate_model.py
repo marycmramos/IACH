@@ -86,12 +86,29 @@ def bootstrap(test):
 
 
 def threshold_metrics(y, p, t):
-    tn, fp, fn, tp = confusion_matrix(y, np.asarray(p) >= t, labels=[0, 1]).ravel()
-    return {"threshold": float(t), "tp": int(tp), "fp": int(fp), "tn": int(tn), "fn": int(fn),
-            "sensitivity": float(tp / (tp + fn)) if tp + fn else 0.0,
-            "specificity": float(tn / (tn + fp)) if tn + fp else 0.0,
-            "precision": float(tp / (tp + fp)) if tp + fp else 0.0}
+    tn, fp, fn, tp = confusion_matrix(
+        y, np.asarray(p) >= t, labels=[0, 1]
+    ).ravel()
 
+    accuracy = (tp + tn) / (tp + tn + fp + fn)
+    precision = tp / (tp + fp) if tp + fp else 0.0
+    recall = tp / (tp + fn) if tp + fn else 0.0
+    f1 = 2 * precision * recall / (precision + recall) if precision + recall else 0.0
+    specificity = tn / (tn + fp) if tn + fp else 0.0
+
+    return {
+        "threshold": float(t),
+        "tp": int(tp),
+        "fp": int(fp),
+        "tn": int(tn),
+        "fn": int(fn),
+        "accuracy": float(accuracy),
+        "precision": float(precision),
+        "recall": float(recall),
+        "f1_score": float(f1),
+        "sensitivity": float(recall),
+        "specificity": float(specificity)
+    }
 
 def patient_weights(df):
     # Mesma ponderação do treino, com class_factor=1.
