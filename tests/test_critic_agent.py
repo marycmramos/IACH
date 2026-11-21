@@ -350,3 +350,24 @@ def test_llm_issue_with_two_imputed_features_preserved(severity):
     # Ambiguous multi-feature claims are preserved rather than collapsed blindly.
     assert len(result['issues']) == 2
     assert any(i['claim'].startswith('The measured BUN_max') for i in result['issues'])
+
+
+def test_treeshap_method_is_sent_to_semantic_reviewer(severity):
+    """Regression for the observed false-positive unsupported_treeshap_label."""
+    def inspecting_client(messages):
+        import json
+        payload = json.loads(messages[1]["content"])
+        evidence = payload["evidence"]["shap_explanation"]
+        assert evidence["method"] == "TreeSHAP"
+        assert evidence["unit"] == "log_odds"
+        assert "TreeSHAP" in payload["explanation_to_review"]
+        return {"issues": [], "summary": "TreeSHAP is supported by method metadata."}
+
+    result = invoke(severity, "TreeSHAP explains feature contributions in log-odds.", inspecting_client)
+    assert result["status"] == "approved"
+
+
+def test_missing_shap_method_is_not_invented(severity):
+    copy_of_severity = copy.deepcopy(severity["result"])
+    copy_of_severity["shap_explanation"].pop("method", None)
+    assert build_evidence(copy_of_severity)["shap_explanation"]["method"] is None
