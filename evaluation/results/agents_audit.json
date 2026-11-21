@@ -1,0 +1,41 @@
+{
+  "note": "Auditoria tecnica, nao validacao clinica.",
+  "episodes": [
+    {
+      "episode_id": "141765",
+      "issues": [],
+      "mortality_probability": 0.03417055681347847,
+      "explanation": {
+        "mortality_summary": "The supplied 24-hour XGBoost model estimate for ICU mortality after 24 hours is 3.42%. This is a model-estimated probability, not a clinical diagnosis or outcome determination.",
+        "clinical_summary": "The supplied clinical observations describe an 87-year-old female patient in a Med-Surg ICU, admitted from the Emergency Department with an admission diagnosis listed as rhythm disturbance, specifically atrial or supraventricular. Recorded vital-sign summaries include respiratory rate last 37.0 and maximum 39.0, heart rate maximum 116.0, systolic blood pressure maximum 165.0, and mean arterial pressure last and maximum 127.0. Pattern summaries show variability in respiratory rate, heart rate, systolic and diastolic blood pressure, and mean arterial pressure. Laboratory values supplied include glucose minimum 61.0 and BUN maximum 28.0. BUN, creatinine, glucose, potassium, and sodium each had only one distinct laboratory timepoint, so the supplied data do not show sustained laboratory trends.",
+        "shap_summary": "The TreeSHAP explanation describes model behavior in log-odds units. The largest negative SHAP contribution was dbp_last at -0.5919820666313171, moving the model output lower in log-odds relative to the model baseline. The largest positive SHAP contribution was rr_last at 0.49464744329452515, moving the model output higher in log-odds. Other positive SHAP contributions included age 0.25538885593414307, BUN_max 0.25063538551330566, BUN_last 0.23903022706508636, and rr_mean 0.19746524095535278. Other negative SHAP contributions included map_mean -0.19025656580924988, sbp_mean -0.15004490315914154, sbp_last -0.13726401329040527, and hr_last -0.12755100429058075. All listed top SHAP features were reported as not imputed.",
+        "overall_explanation": "The XGBoost model estimate is 3.42% for ICU mortality after 24 hours. The clinical observations supplied to the explanation include advanced age, Emergency Department admission, rhythm disturbance as the listed admission diagnosis, high recorded respiratory-rate values, and limited laboratory sampling. The SHAP explanation indicates which observed model inputs most influenced the XGBoost output in log-odds, with rr_last, age, BUN_max, BUN_last, and rr_mean contributing positively, while dbp_last, map_mean, sbp_mean, sbp_last, and hr_last contributed negatively. APACHE IV is supplied separately as a descriptive reference: score 47 with probability 0.8247191387781%, compared with the XGBoost probability of 3.417055681347847%, a supplied difference of 2.592336542569747 percentage points. APACHE IVa is also supplied separately: score 47 with probability 1.2311455455498%, compared with the same XGBoost probability, a supplied difference of 2.1859101357980473 percentage points. These APACHE comparisons are descriptive only and do not demonstrate clinical agreement, calibration, or superiority between models.",
+        "limitations": [
+          "Several laboratory variables had only one distinct timepoint, limiting interpretation of change over time.",
+          "Vital-sign finding flags were listed as unknown, so the supplied evidence does not provide validated abnormality classifications for those measurements.",
+          "Only the top SHAP features were supplied, so the explanation does not describe every feature used by the model.",
+          "Academic research model not clinically validated; predicted probabilities may be uncalibrated.",
+          "SHAP describes model behavior, not clinical causality.",
+          "APACHE comparisons are descriptive; timing and populations may differ."
+        ]
+      }
+    },
+    {
+      "episode_id": "148611",
+      "issues": [
+        "severity: ficheiro ausente",
+        "explanation: ficheiro ausente"
+      ],
+      "mortality_probability": null,
+      "explanation": null
+    },
+    {
+      "episode_id": "156906",
+      "issues": [
+        "explanation: ficheiro ausente"
+      ],
+      "mortality_probability": 0.02536257542669773,
+      "explanation": null
+    }
+  ]
+}
