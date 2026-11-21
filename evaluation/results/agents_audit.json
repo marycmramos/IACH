@@ -47,6 +47,24 @@
           "APACHE comparisons are descriptive; timing and populations may differ."
         ]
       }
+    },
+    {
+      "episode_id": "176730",
+      "issues": [],
+      "mortality_probability": 0.011178342625498772,
+      "explanation": {
+        "mortality_summary": "1.12%",
+        "clinical_summary": "Clinical observations in the provided evidence include age 72, male sex, Med-Surg ICU unit type, direct admission source, and a recorded admission diagnosis of atrial or supraventricular rhythm disturbance. Observed vital-sign values showed variability over the available window: heart rate ranged from 92.0 to 150.0 with a mean of 117.36, respiratory rate ranged from 8.0 to 35.0, systolic blood pressure ranged from 72.0 to 145.0, diastolic blood pressure ranged from 56.0 to 105.0, and mean arterial pressure ranged from 62.0 to 122.0. Laboratory summaries for BUN, creatinine, glucose, potassium, and sodium each had only one distinct timepoint, so they do not support interpretation of a sustained trend.",
+        "shap_summary": "TreeSHAP values are reported in log-odds and describe how features contributed to this XGBoost model output, not causal clinical effects or percentage-point changes in mortality. The largest negative SHAP contribution was BUN_last at -0.6015, which pulled the model output lower. Other negative contributors among the top features included map_mean, rr_last, dbp_last, BUN_max, sbp_last, glucose_max, rr_mean, and sao2_min. The main positive contributor listed was hr_mean at 0.3214, which pushed the model output higher. The supplied top SHAP features were not marked as imputed, and the model data-quality summary reported no missing model features.",
+        "overall_explanation": "The XGBoost 24-hour ICU mortality model estimated mortality at 1.12%. This is a model estimate and is separate from the clinical observations, which include variable vital signs, a recorded rhythm-disturbance admission diagnosis, and sparse laboratory measurements with only one distinct timepoint for each listed lab variable. The SHAP explanation indicates that, for this specific prediction, several listed features contributed negative log-odds to the model output, while mean heart rate contributed positive log-odds. These SHAP values explain model behavior only and should not be interpreted as causal relationships. APACHE IV and APACHE IVa probabilities were not supplied, so no descriptive APACHE comparison can be made.",
+        "limitations": [
+          "Laboratory trend interpretation is limited because BUN, creatinine, glucose, potassium, and sodium each have only one distinct measurement timepoint.",
+          "Vital-sign flags are listed as unknown, so the evidence does not provide validated threshold-based interpretation for those measurements.",
+          "Academic research model not clinically validated; predicted probabilities may be uncalibrated.",
+          "SHAP describes model behavior, not clinical causality.",
+          "APACHE comparison is unavailable."
+        ]
+      }
     }
   ]
 }
