@@ -1,0 +1,70 @@
+{
+  "note": "Auditoria tecnica, nao validacao clinica.",
+  "episodes": [
+    {
+      "episode_id": "141765",
+      "issues": [],
+      "mortality_probability": 0.03417055681347847,
+      "explanation": {
+        "mortality_summary": "3.42%",
+        "clinical_summary": "The supplied clinical observations describe an 87-year-old female admitted to a Med-Surg ICU from the Emergency Department with an admission diagnosis listed as atrial or supraventricular rhythm disturbance and past history recorded as no health problems. Observed vital-sign summaries include respiratory rate last value 37.0 with maximum 39.0, heart rate maximum 116.0, systolic blood pressure maximum 165.0, and mean arterial pressure last and maximum values of 127.0. Pattern summaries show variability across several vital signs, including respiratory rate observed range 22.0 and last-minus-mean 12.217391304347824, and mean arterial pressure observed range 52.0 and last-minus-mean 31.82608695652172. Laboratory observations include glucose minimum 61.0 and BUN maximum 28.0. Laboratory change interpretation is limited because BUN, creatinine, glucose, potassium, and sodium each have only one distinct supplied timepoint, so these values do not demonstrate sustained trends.",
+        "shap_summary": "TreeSHAP explanations are provided in log-odds units and describe how features contributed to this XGBoost model output, not causal clinical effects or percentage-point changes in mortality. Positive SHAP contributions pushed the model output higher in log-odds; the largest positive contributions listed were rr_last 0.49464744329452515 with original value 37.0, age 0.25538885593414307 with original value 87.0, BUN_max 0.25063538551330566 with original value 28.0, BUN_last 0.23903022706508636 with original value 28.0, and rr_mean 0.19746524095535278 with original value 24.782608695652176. Negative SHAP contributions pushed the model output lower in log-odds; the largest listed was dbp_last -0.5919820666313171 with original value 85.0, followed by map_mean -0.19025656580924988, sbp_mean -0.15004490315914154, sbp_last -0.13726401329040527, and hr_last -0.12755100429058075. The supplied top SHAP features were not reported as imputed.",
+        "overall_explanation": "The XGBoost 24-hour ICU mortality model supplied an estimated probability of 3.42%. Clinically, the provided evidence includes advanced age, Emergency Department admission to a Med-Surg ICU, an admission diagnosis described as atrial or supraventricular rhythm disturbance, several vital-sign summaries with notable observed ranges and last-minus-mean differences, and sparse laboratory measurements. The SHAP explanation indicates that some features, including respiratory-rate measures, age, and BUN measures, pushed the model output higher in log-odds, while other features, including last diastolic blood pressure, mean arterial pressure mean, systolic blood pressure measures, and last heart rate, pushed it lower in log-odds. The supplied base probability for the SHAP explanation was 5.13%, and the final XGBoost estimate was lower than that base probability. APACHE IV is supplied separately as a descriptive reference: APACHE IV score 47 with probability 0.82%, while the XGBoost probability is higher by 2.592336542569747 percentage points. APACHE IVa is also supplied separately: APACHE IVa score 47 with probability 1.23%, while the XGBoost probability is higher by 2.1859101357980473 percentage points. These APACHE comparisons are descriptive only and do not establish clinical agreement, calibration, or superiority.",
+        "limitations": [
+          "Several laboratory variables have only one distinct supplied timepoint, limiting interpretation of change over time.",
+          "Some clinical-agent findings have unknown flags and null rule identifiers, so they should be treated as unvalidated observations rather than clinical classifications.",
+          "Academic research model not clinically validated; predicted probabilities may be uncalibrated.",
+          "SHAP describes model behavior, not clinical causality.",
+          "APACHE comparisons are descriptive; timing and populations may differ."
+        ]
+      }
+    },
+    {
+      "episode_id": "148611",
+      "issues": [
+        "severity: ficheiro ausente",
+        "explanation: ficheiro ausente"
+      ],
+      "mortality_probability": null,
+      "explanation": null
+    },
+    {
+      "episode_id": "156906",
+      "issues": [],
+      "mortality_probability": 0.02536257542669773,
+      "explanation": {
+        "mortality_summary": "2.54%",
+        "clinical_summary": "The supplied clinical observations describe a 52-year-old female admitted to a Med-Surg ICU from the Emergency Department with an admission diagnosis of emphysema/bronchitis and past history listed as No Health Problems. Recorded vital-sign observations include last respiratory rate 33.0, maximum systolic blood pressure 199.0, maximum diastolic blood pressure 110.0, and maximum mean arterial pressure 168.0, with flags reported as unknown. Pattern summaries show variability across heart rate, respiratory rate, systolic blood pressure, diastolic blood pressure, and mean arterial pressure. The laboratory agent reported no laboratory findings; creatinine had one recorded timepoint only, so no first-to-last trend could be interpreted from the supplied data.",
+        "shap_summary": "TreeSHAP explanations are supplied in log-odds units and describe how features contributed to this model output. Positive contributions included rr_last 0.4087, BUN_last 0.1664, dbp_max 0.1511, and sbp_max 0.1251, meaning these features moved the model output upward in log-odds relative to the model baseline. Negative contributions included age -0.3896, BUN_max -0.2020, sbp_last -0.2020, sbp_mean -0.1844, map_mean -0.1426, and hr_last -0.1280, meaning these features moved the model output downward in log-odds. BUN_max and BUN_last were imputed with no original measured value supplied, so they should not be interpreted as measured clinical values.",
+        "overall_explanation": "The XGBoost 24-hour ICU mortality model estimate is 2.54%. The clinical evidence includes an Emergency Department admission to a Med-Surg ICU for emphysema/bronchitis, with observed vital-sign values and pattern summaries as described, but without validated reference thresholds or clinical interpretation rules in the supplied evidence. The SHAP explanation indicates that the largest upward model contribution was rr_last, while the largest downward contribution was age; blood pressure-related features had mixed directions in the model explanation. APACHE IV was supplied separately with score 18 and predicted mortality 0.68%; compared with the XGBoost estimate of 2.54%, the supplied difference is 1.86 percentage points. APACHE IVa was supplied separately with score 18 and predicted mortality 0.74%; compared with the XGBoost estimate of 2.54%, the supplied difference is 1.80 percentage points. These APACHE comparisons are descriptive only and do not establish clinical agreement, calibration, or superiority.",
+        "limitations": [
+          "Data quality information reports 53 features with 20 missing features, which limits interpretation of the model explanation.",
+          "Creatinine had only one distinct recorded timepoint, so the supplied laboratory data were insufficient for trend interpretation.",
+          "Several vital-sign findings had flags reported as unknown, limiting interpretation of those observations.",
+          "Academic research model not clinically validated; predicted probabilities may be uncalibrated.",
+          "SHAP describes model behavior, not clinical causality.",
+          "Some SHAP features were imputed rather than measured.",
+          "APACHE comparisons are descriptive; timing and populations may differ."
+        ]
+      }
+    },
+    {
+      "episode_id": "176730",
+      "issues": [],
+      "mortality_probability": 0.011178342625498772,
+      "explanation": {
+        "mortality_summary": "1.12%",
+        "clinical_summary": "Clinical observations in the provided evidence include age 72, male sex, Med-Surg ICU unit type, direct admission source, and a recorded admission diagnosis of atrial or supraventricular rhythm disturbance. Observed vital-sign values showed variability over the available window: heart rate ranged from 92.0 to 150.0 with a mean of 117.36, respiratory rate ranged from 8.0 to 35.0, systolic blood pressure ranged from 72.0 to 145.0, diastolic blood pressure ranged from 56.0 to 105.0, and mean arterial pressure ranged from 62.0 to 122.0. Laboratory summaries for BUN, creatinine, glucose, potassium, and sodium each had only one distinct timepoint, so they do not support interpretation of a sustained trend.",
+        "shap_summary": "TreeSHAP values are reported in log-odds and describe how features contributed to this XGBoost model output, not causal clinical effects or percentage-point changes in mortality. The largest negative SHAP contribution was BUN_last at -0.6015, which pulled the model output lower. Other negative contributors among the top features included map_mean, rr_last, dbp_last, BUN_max, sbp_last, glucose_max, rr_mean, and sao2_min. The main positive contributor listed was hr_mean at 0.3214, which pushed the model output higher. The supplied top SHAP features were not marked as imputed, and the model data-quality summary reported no missing model features.",
+        "overall_explanation": "The XGBoost 24-hour ICU mortality model estimated mortality at 1.12%. This is a model estimate and is separate from the clinical observations, which include variable vital signs, a recorded rhythm-disturbance admission diagnosis, and sparse laboratory measurements with only one distinct timepoint for each listed lab variable. The SHAP explanation indicates that, for this specific prediction, several listed features contributed negative log-odds to the model output, while mean heart rate contributed positive log-odds. These SHAP values explain model behavior only and should not be interpreted as causal relationships. APACHE IV and APACHE IVa probabilities were not supplied, so no descriptive APACHE comparison can be made.",
+        "limitations": [
+          "Laboratory trend interpretation is limited because BUN, creatinine, glucose, potassium, and sodium each have only one distinct measurement timepoint.",
+          "Vital-sign flags are listed as unknown, so the evidence does not provide validated threshold-based interpretation for those measurements.",
+          "Academic research model not clinically validated; predicted probabilities may be uncalibrated.",
+          "SHAP describes model behavior, not clinical causality.",
+          "APACHE comparison is unavailable."
+        ]
+      }
+    }
+  ]
+}

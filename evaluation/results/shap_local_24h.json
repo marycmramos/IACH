@@ -1,0 +1,59 @@
+{
+  "selection": "highest predicted risk in test set",
+  "patientunitstayid": "1694608",
+  "predicted_probability": 0.33972588181495667,
+  "base_log_odds": -2.9171390533447266,
+  "shap_unit": "log-odds",
+  "top_features": [
+    {
+      "feature": "sbp_last",
+      "value": "85.0",
+      "shap_value": 0.6502931118011475
+    },
+    {
+      "feature": "sao2_min",
+      "value": "72.0",
+      "shap_value": 0.39742234349250793
+    },
+    {
+      "feature": "glucose_first",
+      "value": "313.0",
+      "shap_value": 0.29256707429885864
+    },
+    {
+      "feature": "potassium_last",
+      "value": "6.2",
+      "shap_value": 0.27978867292404175
+    },
+    {
+      "feature": "dbp_max",
+      "value": "145.0",
+      "shap_value": 0.26974228024482727
+    },
+    {
+      "feature": "BUN_max",
+      "value": "93.0",
+      "shap_value": 0.18253254890441895
+    },
+    {
+      "feature": "rr_mean",
+      "value": null,
+      "shap_value": -0.18094299733638763
+    },
+    {
+      "feature": "BUN_last",
+      "value": "93.0",
+      "shap_value": 0.17115665972232819
+    },
+    {
+      "feature": "sbp_min",
+      "value": "49.0",
+      "shap_value": 0.1659296452999115
+    },
+    {
+      "feature": "dbp_last",
+      "value": "55.0",
+      "shap_value": 0.16475792229175568
+    }
+  ]
+}
