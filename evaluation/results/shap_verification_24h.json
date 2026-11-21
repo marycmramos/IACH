@@ -1,0 +1,95 @@
+{
+  "episode_id": "1694608",
+  "dataset_split": "test",
+  "observed_outcome": 1,
+  "observed_outcome_label": "died_in_icu",
+  "predicted_mortality_probability": 0.33972588181495667,
+  "n_original_features": 53,
+  "n_transformed_features": 72,
+  "n_missing_features": 4,
+  "feature_mapping_verified": true,
+  "shap_agreement_verified": true,
+  "shap_reconstruction_verified": true,
+  "top_shap_features": [
+    {
+      "feature": "sbp_last",
+      "original_value": 85.0,
+      "was_imputed": false,
+      "processed_value": 85.0,
+      "shap_value": 0.6502931118011475,
+      "direction": "aumenta"
+    },
+    {
+      "feature": "sao2_min",
+      "original_value": 72.0,
+      "was_imputed": false,
+      "processed_value": 72.0,
+      "shap_value": 0.39742234349250793,
+      "direction": "aumenta"
+    },
+    {
+      "feature": "glucose_first",
+      "original_value": 313.0,
+      "was_imputed": false,
+      "processed_value": 313.0,
+      "shap_value": 0.29256707429885864,
+      "direction": "aumenta"
+    },
+    {
+      "feature": "potassium_last",
+      "original_value": 6.2,
+      "was_imputed": false,
+      "processed_value": 6.2,
+      "shap_value": 0.27978867292404175,
+      "direction": "aumenta"
+    },
+    {
+      "feature": "dbp_max",
+      "original_value": 145.0,
+      "was_imputed": false,
+      "processed_value": 145.0,
+      "shap_value": 0.26974228024482727,
+      "direction": "aumenta"
+    },
+    {
+      "feature": "BUN_max",
+      "original_value": 93.0,
+      "was_imputed": false,
+      "processed_value": 93.0,
+      "shap_value": 0.18253254890441895,
+      "direction": "aumenta"
+    },
+    {
+      "feature": "rr_mean",
+      "original_value": null,
+      "was_imputed": true,
+      "processed_value": 18.89400921658986,
+      "shap_value": -0.18094299733638763,
+      "direction": "diminui"
+    },
+    {
+      "feature": "BUN_last",
+      "original_value": 93.0,
+      "was_imputed": false,
+      "processed_value": 93.0,
+      "shap_value": 0.17115665972232819,
+      "direction": "aumenta"
+    },
+    {
+      "feature": "sbp_min",
+      "original_value": 49.0,
+      "was_imputed": false,
+      "processed_value": 49.0,
+      "shap_value": 0.1659296452999115,
+      "direction": "aumenta"
+    },
+    {
+      "feature": "dbp_last",
+      "original_value": 55.0,
+      "was_imputed": false,
+      "processed_value": 55.0,
+      "shap_value": 0.16475792229175568,
+      "direction": "aumenta"
+    }
+  ]
+}
