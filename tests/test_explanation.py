@@ -42,7 +42,11 @@ REPORT = {
     "mortality_summary": "XGBoost estimates 2.54% ICU mortality.",
     "clinical_summary": "Vital findings were provided.",
     "shap_summary": "rr_last increased and age decreased model log-odds.",
-    "overall_explanation": "The estimate is 2.54%; SHAP describes model behavior.",
+    "overall_explanation": (
+        "The estimate is 2.54%; SHAP describes model behavior. "
+        "APACHE IV estimates 12.00% and APACHE IVa estimates 10.00% "
+        "(descriptive comparisons only)."
+    ),
     "limitations": [],
 }
 
@@ -278,3 +282,28 @@ def test_revision_keeps_probability_guard():
     })
     assert outcome["status"] == "success"
     assert len(client.calls) == 2
+
+
+def test_rejects_missing_apache_percentage_in_llm_report():
+    missing = deepcopy(REPORT)
+    missing["overall_explanation"] = (
+        "The estimate is 2.54%; SHAP describes model behavior. "
+        "APACHE IVa estimates 10.00% (descriptive comparison only)."
+    )
+    client = FakeClient([missing, missing, missing])
+    result = run_explanation_agent(state(), llm_client=client)
+    assert result["status"] == "error"
+    assert len(client.calls) == 3
+
+
+def test_rejects_apache_fraction_or_wrong_percentage():
+    wrong = deepcopy(REPORT)
+    wrong["overall_explanation"] = (
+        "The estimate is 2.54%; SHAP describes model behavior. "
+        "APACHE IV estimates 0.12% and APACHE IVa estimates 10.00% "
+        "(descriptive comparisons only)."
+    )
+    client = FakeClient([wrong, wrong, wrong])
+    result = run_explanation_agent(state(), llm_client=client)
+    assert result["status"] == "error"
+    assert len(client.calls) == 3

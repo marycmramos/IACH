@@ -42,7 +42,11 @@ REPORT = {
     "mortality_summary": "XGBoost estimates 2.54% ICU mortality.",
     "clinical_summary": "Vital findings were provided.",
     "shap_summary": "rr_last increased and age decreased model log-odds.",
-    "overall_explanation": "The estimate is 2.54%; SHAP describes model behavior.",
+    "overall_explanation": (
+        "The estimate is 2.54%; SHAP describes model behavior. "
+        "APACHE IV estimates 12.00% and APACHE IVa estimates 10.00% "
+        "(descriptive comparisons only)."
+    ),
     "limitations": [],
 }
 
