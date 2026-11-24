@@ -1,0 +1,1077 @@
+{
+  "patientunitstayid": 156906,
+  "result": {
+    "agent": "severity",
+    "status": "success",
+    "patientunitstayid": "156906",
+    "prediction_hour": 24,
+    "mortality_prediction": {
+      "model": "xgboost_24h",
+      "outcome": "icu_mortality_after_24h",
+      "probability": 0.02536257542669773
+    },
+    "shap_explanation": {
+      "method": "TreeSHAP",
+      "unit": "log_odds",
+      "base_probability": 0.05131279255645831,
+      "top_features": [
+        {
+          "feature": "rr_last",
+          "original_value": 33.0,
+          "was_imputed": false,
+          "processed_value": 33.0,
+          "shap_value": 0.4086771607398987,
+          "direction": "increases"
+        },
+        {
+          "feature": "age",
+          "original_value": 52.0,
+          "was_imputed": false,
+          "processed_value": 52.0,
+          "shap_value": -0.38962993025779724,
+          "direction": "decreases"
+        },
+        {
+          "feature": "BUN_max",
+          "original_value": null,
+          "was_imputed": true,
+          "processed_value": 21.0,
+          "shap_value": -0.20202691853046417,
+          "direction": "decreases"
+        },
+        {
+          "feature": "sbp_last",
+          "original_value": 164.0,
+          "was_imputed": false,
+          "processed_value": 164.0,
+          "shap_value": -0.20201192796230316,
+          "direction": "decreases"
+        },
+        {
+          "feature": "sbp_mean",
+          "original_value": 168.9268292682927,
+          "was_imputed": false,
+          "processed_value": 168.9268292682927,
+          "shap_value": -0.18442857265472412,
+          "direction": "decreases"
+        },
+        {
+          "feature": "BUN_last",
+          "original_value": null,
+          "was_imputed": true,
+          "processed_value": 20.0,
+          "shap_value": 0.16639505326747894,
+          "direction": "increases"
+        },
+        {
+          "feature": "dbp_max",
+          "original_value": 110.0,
+          "was_imputed": false,
+          "processed_value": 110.0,
+          "shap_value": 0.15110743045806885,
+          "direction": "increases"
+        },
+        {
+          "feature": "map_mean",
+          "original_value": 116.65853658536584,
+          "was_imputed": false,
+          "processed_value": 116.65853658536584,
+          "shap_value": -0.14262641966342926,
+          "direction": "decreases"
+        },
+        {
+          "feature": "hr_last",
+          "original_value": 80.0,
+          "was_imputed": false,
+          "processed_value": 80.0,
+          "shap_value": -0.12804155051708221,
+          "direction": "decreases"
+        },
+        {
+          "feature": "sbp_max",
+          "original_value": 199.0,
+          "was_imputed": false,
+          "processed_value": 199.0,
+          "shap_value": 0.1251406967639923,
+          "direction": "increases"
+        }
+      ],
+      "all_features": [
+        {
+          "feature": "rr_last",
+          "original_value": 33.0,
+          "was_imputed": false,
+          "processed_value": 33.0,
+          "shap_value": 0.4086771607398987,
+          "direction": "increases"
+        },
+        {
+          "feature": "age",
+          "original_value": 52.0,
+          "was_imputed": false,
+          "processed_value": 52.0,
+          "shap_value": -0.38962993025779724,
+          "direction": "decreases"
+        },
+        {
+          "feature": "BUN_max",
+          "original_value": null,
+          "was_imputed": true,
+          "processed_value": 21.0,
+          "shap_value": -0.20202691853046417,
+          "direction": "decreases"
+        },
+        {
+          "feature": "sbp_last",
+          "original_value": 164.0,
+          "was_imputed": false,
+          "processed_value": 164.0,
+          "shap_value": -0.20201192796230316,
+          "direction": "decreases"
+        },
+        {
+          "feature": "sbp_mean",
+          "original_value": 168.9268292682927,
+          "was_imputed": false,
+          "processed_value": 168.9268292682927,
+          "shap_value": -0.18442857265472412,
+          "direction": "decreases"
+        },
+        {
+          "feature": "BUN_last",
+          "original_value": null,
+          "was_imputed": true,
+          "processed_value": 20.0,
+          "shap_value": 0.16639505326747894,
+          "direction": "increases"
+        },
+        {
+          "feature": "dbp_max",
+          "original_value": 110.0,
+          "was_imputed": false,
+          "processed_value": 110.0,
+          "shap_value": 0.15110743045806885,
+          "direction": "increases"
+        },
+        {
+          "feature": "map_mean",
+          "original_value": 116.65853658536584,
+          "was_imputed": false,
+          "processed_value": 116.65853658536584,
+          "shap_value": -0.14262641966342926,
+          "direction": "decreases"
+        },
+        {
+          "feature": "hr_last",
+          "original_value": 80.0,
+          "was_imputed": false,
+          "processed_value": 80.0,
+          "shap_value": -0.12804155051708221,
+          "direction": "decreases"
+        },
+        {
+          "feature": "sbp_max",
+          "original_value": 199.0,
+          "was_imputed": false,
+          "processed_value": 199.0,
+          "shap_value": 0.1251406967639923,
+          "direction": "increases"
+        },
+        {
+          "feature": "sao2_min",
+          "original_value": 89.0,
+          "was_imputed": false,
+          "processed_value": 89.0,
+          "shap_value": -0.12107250094413757,
+          "direction": "decreases"
+        },
+        {
+          "feature": "creatinine_max",
+          "original_value": 0.8,
+          "was_imputed": false,
+          "processed_value": 0.8,
+          "shap_value": -0.08383779227733612,
+          "direction": "decreases"
+        },
+        {
+          "feature": "potassium_last",
+          "original_value": null,
+          "was_imputed": true,
+          "processed_value": 4.0,
+          "shap_value": -0.07258587330579758,
+          "direction": "decreases"
+        },
+        {
+          "feature": "dbp_last",
+          "original_value": 68.0,
+          "was_imputed": false,
+          "processed_value": 68.0,
+          "shap_value": 0.06638969480991364,
+          "direction": "increases"
+        },
+        {
+          "feature": "sao2_mean",
+          "original_value": 93.9157894736842,
+          "was_imputed": false,
+          "processed_value": 93.9157894736842,
+          "shap_value": -0.06322859972715378,
+          "direction": "decreases"
+        },
+        {
+          "feature": "map_max",
+          "original_value": 168.0,
+          "was_imputed": false,
+          "processed_value": 168.0,
+          "shap_value": 0.05997323989868164,
+          "direction": "increases"
+        },
+        {
+          "feature": "creatinine_mean",
+          "original_value": 0.8,
+          "was_imputed": false,
+          "processed_value": 0.8,
+          "shap_value": -0.05411902815103531,
+          "direction": "decreases"
+        },
+        {
+          "feature": "BUN_first",
+          "original_value": null,
+          "was_imputed": true,
+          "processed_value": 21.0,
+          "shap_value": 0.053151533007621765,
+          "direction": "increases"
+        },
+        {
+          "feature": "rr_mean",
+          "original_value": 21.854748603351958,
+          "was_imputed": false,
+          "processed_value": 21.854748603351958,
+          "shap_value": 0.04810715466737747,
+          "direction": "increases"
+        },
+        {
+          "feature": "sbp_min",
+          "original_value": 129.0,
+          "was_imputed": false,
+          "processed_value": 129.0,
+          "shap_value": -0.037982482463121414,
+          "direction": "decreases"
+        },
+        {
+          "feature": "creatinine_last",
+          "original_value": 0.8,
+          "was_imputed": false,
+          "processed_value": 0.8,
+          "shap_value": -0.03769833967089653,
+          "direction": "decreases"
+        },
+        {
+          "feature": "map_min",
+          "original_value": 90.0,
+          "was_imputed": false,
+          "processed_value": 90.0,
+          "shap_value": -0.03312910348176956,
+          "direction": "decreases"
+        },
+        {
+          "feature": "hr_min",
+          "original_value": 72.0,
+          "was_imputed": false,
+          "processed_value": 72.0,
+          "shap_value": 0.03154297173023224,
+          "direction": "increases"
+        },
+        {
+          "feature": "rr_min",
+          "original_value": 15.0,
+          "was_imputed": false,
+          "processed_value": 15.0,
+          "shap_value": -0.02880224585533142,
+          "direction": "decreases"
+        },
+        {
+          "feature": "potassium_mean",
+          "original_value": null,
+          "was_imputed": true,
+          "processed_value": 4.0,
+          "shap_value": -0.027036340907216072,
+          "direction": "decreases"
+        },
+        {
+          "feature": "glucose_first",
+          "original_value": null,
+          "was_imputed": true,
+          "processed_value": 127.0,
+          "shap_value": -0.019620858132839203,
+          "direction": "decreases"
+        },
+        {
+          "feature": "BUN_mean",
+          "original_value": null,
+          "was_imputed": true,
+          "processed_value": 20.0,
+          "shap_value": 0.01786382682621479,
+          "direction": "increases"
+        },
+        {
+          "feature": "BUN_min",
+          "original_value": null,
+          "was_imputed": true,
+          "processed_value": 20.0,
+          "shap_value": 0.015507424250245094,
+          "direction": "increases"
+        },
+        {
+          "feature": "glucose_max",
+          "original_value": null,
+          "was_imputed": true,
+          "processed_value": 134.0,
+          "shap_value": 0.014194965362548828,
+          "direction": "increases"
+        },
+        {
+          "feature": "gender",
+          "original_value": "Female",
+          "was_imputed": false,
+          "processed_value": null,
+          "shap_value": -0.013379586860537529,
+          "direction": "decreases"
+        },
+        {
+          "feature": "admission_source",
+          "original_value": "Emergency Department",
+          "was_imputed": false,
+          "processed_value": null,
+          "shap_value": -0.012323240749537945,
+          "direction": "decreases"
+        },
+        {
+          "feature": "creatinine_first",
+          "original_value": 0.8,
+          "was_imputed": false,
+          "processed_value": 0.8,
+          "shap_value": -0.011746321804821491,
+          "direction": "decreases"
+        },
+        {
+          "feature": "hr_max",
+          "original_value": 100.0,
+          "was_imputed": false,
+          "processed_value": 100.0,
+          "shap_value": -0.008644772693514824,
+          "direction": "decreases"
+        },
+        {
+          "feature": "map_last",
+          "original_value": 94.0,
+          "was_imputed": false,
+          "processed_value": 94.0,
+          "shap_value": 0.007677245885133743,
+          "direction": "increases"
+        },
+        {
+          "feature": "potassium_min",
+          "original_value": null,
+          "was_imputed": true,
+          "processed_value": 3.9,
+          "shap_value": -0.007390722166746855,
+          "direction": "decreases"
+        },
+        {
+          "feature": "glucose_min",
+          "original_value": null,
+          "was_imputed": true,
+          "processed_value": 118.0,
+          "shap_value": 0.007168738637119532,
+          "direction": "increases"
+        },
+        {
+          "feature": "dbp_mean",
+          "original_value": 83.04878048780488,
+          "was_imputed": false,
+          "processed_value": 83.04878048780488,
+          "shap_value": -0.006907361093908548,
+          "direction": "decreases"
+        },
+        {
+          "feature": "hr_mean",
+          "original_value": 84.6056338028169,
+          "was_imputed": false,
+          "processed_value": 84.6056338028169,
+          "shap_value": -0.005339879542589188,
+          "direction": "decreases"
+        },
+        {
+          "feature": "potassium_max",
+          "original_value": null,
+          "was_imputed": true,
+          "processed_value": 4.1,
+          "shap_value": -0.004121384583413601,
+          "direction": "decreases"
+        },
+        {
+          "feature": "sodium_first",
+          "original_value": null,
+          "was_imputed": true,
+          "processed_value": 139.0,
+          "shap_value": 0.003789756912738085,
+          "direction": "increases"
+        },
+        {
+          "feature": "sodium_min",
+          "original_value": null,
+          "was_imputed": true,
+          "processed_value": 138.0,
+          "shap_value": -0.003424476832151413,
+          "direction": "decreases"
+        },
+        {
+          "feature": "dbp_min",
+          "original_value": 62.0,
+          "was_imputed": false,
+          "processed_value": 62.0,
+          "shap_value": -0.0032744836062192917,
+          "direction": "decreases"
+        },
+        {
+          "feature": "potassium_first",
+          "original_value": null,
+          "was_imputed": true,
+          "processed_value": 4.0,
+          "shap_value": -0.0031552272848784924,
+          "direction": "decreases"
+        },
+        {
+          "feature": "glucose_last",
+          "original_value": null,
+          "was_imputed": true,
+          "processed_value": 124.0,
+          "shap_value": -0.0022781987208873034,
+          "direction": "decreases"
+        },
+        {
+          "feature": "rr_max",
+          "original_value": 33.0,
+          "was_imputed": false,
+          "processed_value": 33.0,
+          "shap_value": 0.0015243478119373322,
+          "direction": "increases"
+        },
+        {
+          "feature": "unit_type",
+          "original_value": "Med-Surg ICU",
+          "was_imputed": false,
+          "processed_value": null,
+          "shap_value": 0.0,
+          "direction": "neutral"
+        },
+        {
+          "feature": "sao2_max",
+          "original_value": 100.0,
+          "was_imputed": false,
+          "processed_value": 100.0,
+          "shap_value": 0.0,
+          "direction": "neutral"
+        },
+        {
+          "feature": "sao2_last",
+          "original_value": 93.0,
+          "was_imputed": false,
+          "processed_value": 93.0,
+          "shap_value": 0.0,
+          "direction": "neutral"
+        },
+        {
+          "feature": "creatinine_min",
+          "original_value": 0.8,
+          "was_imputed": false,
+          "processed_value": 0.8,
+          "shap_value": 0.0,
+          "direction": "neutral"
+        },
+        {
+          "feature": "glucose_mean",
+          "original_value": null,
+          "was_imputed": true,
+          "processed_value": 127.0,
+          "shap_value": 0.0,
+          "direction": "neutral"
+        },
+        {
+          "feature": "sodium_mean",
+          "original_value": null,
+          "was_imputed": true,
+          "processed_value": 139.0,
+          "shap_value": 0.0,
+          "direction": "neutral"
+        },
+        {
+          "feature": "sodium_max",
+          "original_value": null,
+          "was_imputed": true,
+          "processed_value": 139.0,
+          "shap_value": 0.0,
+          "direction": "neutral"
+        },
+        {
+          "feature": "sodium_last",
+          "original_value": null,
+          "was_imputed": true,
+          "processed_value": 139.0,
+          "shap_value": 0.0,
+          "direction": "neutral"
+        }
+      ]
+    },
+    "data_quality": {
+      "n_features": 53,
+      "n_missing_features": 20,
+      "missing_features": [
+        "BUN_first",
+        "BUN_mean",
+        "BUN_min",
+        "BUN_max",
+        "BUN_last",
+        "glucose_first",
+        "glucose_mean",
+        "glucose_min",
+        "glucose_max",
+        "glucose_last",
+        "potassium_first",
+        "potassium_mean",
+        "potassium_min",
+        "potassium_max",
+        "potassium_last",
+        "sodium_first",
+        "sodium_mean",
+        "sodium_min",
+        "sodium_max",
+        "sodium_last"
+      ]
+    },
+    "agent_context": {
+      "available_agents": [
+        "vital",
+        "laboratory",
+        "clinical"
+      ],
+      "results": {
+        "vital": {
+          "patient_id": 156906,
+          "status": "success",
+          "raw_data": {
+            "patientunitstayid": 156906.0,
+            "hr_mean": 84.6056338028169,
+            "hr_min": 72.0,
+            "hr_max": 100.0,
+            "hr_last": 80.0,
+            "sao2_mean": 93.9157894736842,
+            "sao2_min": 89.0,
+            "sao2_max": 100.0,
+            "sao2_last": 93.0,
+            "rr_mean": 21.854748603351958,
+            "rr_min": 15.0,
+            "rr_max": 33.0,
+            "rr_last": 33.0,
+            "temp_mean": null,
+            "temp_min": null,
+            "temp_max": null,
+            "temp_last": null,
+            "sbp_mean": 168.9268292682927,
+            "sbp_min": 129.0,
+            "sbp_max": 199.0,
+            "sbp_last": 164.0,
+            "dbp_mean": 83.04878048780488,
+            "dbp_min": 62.0,
+            "dbp_max": 110.0,
+            "dbp_last": 68.0,
+            "map_mean": 116.65853658536584,
+            "map_min": 90.0,
+            "map_max": 168.0,
+            "map_last": 94.0
+          },
+          "range_evaluations": [
+            {
+              "variable": "hr_mean",
+              "value": 84.6056338028169,
+              "flag": "unknown",
+              "rule_id": null
+            },
+            {
+              "variable": "hr_min",
+              "value": 72.0,
+              "flag": "unknown",
+              "rule_id": null
+            },
+            {
+              "variable": "hr_max",
+              "value": 100.0,
+              "flag": "unknown",
+              "rule_id": null
+            },
+            {
+              "variable": "hr_last",
+              "value": 80.0,
+              "flag": "unknown",
+              "rule_id": null
+            },
+            {
+              "variable": "rr_mean",
+              "value": 21.854748603351958,
+              "flag": "unknown",
+              "rule_id": null
+            },
+            {
+              "variable": "rr_min",
+              "value": 15.0,
+              "flag": "unknown",
+              "rule_id": null
+            },
+            {
+              "variable": "rr_max",
+              "value": 33.0,
+              "flag": "unknown",
+              "rule_id": null
+            },
+            {
+              "variable": "rr_last",
+              "value": 33.0,
+              "flag": "unknown",
+              "rule_id": null
+            },
+            {
+              "variable": "sbp_mean",
+              "value": 168.9268292682927,
+              "flag": "unknown",
+              "rule_id": null
+            },
+            {
+              "variable": "sbp_min",
+              "value": 129.0,
+              "flag": "unknown",
+              "rule_id": null
+            },
+            {
+              "variable": "sbp_max",
+              "value": 199.0,
+              "flag": "unknown",
+              "rule_id": null
+            },
+            {
+              "variable": "sbp_last",
+              "value": 164.0,
+              "flag": "unknown",
+              "rule_id": null
+            },
+            {
+              "variable": "dbp_mean",
+              "value": 83.04878048780488,
+              "flag": "unknown",
+              "rule_id": null
+            },
+            {
+              "variable": "dbp_min",
+              "value": 62.0,
+              "flag": "unknown",
+              "rule_id": null
+            },
+            {
+              "variable": "dbp_max",
+              "value": 110.0,
+              "flag": "unknown",
+              "rule_id": null
+            },
+            {
+              "variable": "dbp_last",
+              "value": 68.0,
+              "flag": "unknown",
+              "rule_id": null
+            },
+            {
+              "variable": "map_mean",
+              "value": 116.65853658536584,
+              "flag": "unknown",
+              "rule_id": null
+            },
+            {
+              "variable": "map_min",
+              "value": 90.0,
+              "flag": "unknown",
+              "rule_id": null
+            },
+            {
+              "variable": "map_max",
+              "value": 168.0,
+              "flag": "unknown",
+              "rule_id": null
+            },
+            {
+              "variable": "map_last",
+              "value": 94.0,
+              "flag": "unknown",
+              "rule_id": null
+            }
+          ],
+          "patterns": [
+            {
+              "variable": "hr",
+              "pattern_type": "observed_range",
+              "value": 28.0,
+              "source_columns": [
+                "hr_min",
+                "hr_max"
+              ]
+            },
+            {
+              "variable": "hr",
+              "pattern_type": "last_minus_mean",
+              "value": -4.605633802816897,
+              "source_columns": [
+                "hr_last",
+                "hr_mean"
+              ]
+            },
+            {
+              "variable": "rr",
+              "pattern_type": "observed_range",
+              "value": 18.0,
+              "source_columns": [
+                "rr_min",
+                "rr_max"
+              ]
+            },
+            {
+              "variable": "rr",
+              "pattern_type": "last_minus_mean",
+              "value": 11.145251396648042,
+              "source_columns": [
+                "rr_last",
+                "rr_mean"
+              ]
+            },
+            {
+              "variable": "sbp",
+              "pattern_type": "observed_range",
+              "value": 70.0,
+              "source_columns": [
+                "sbp_min",
+                "sbp_max"
+              ]
+            },
+            {
+              "variable": "sbp",
+              "pattern_type": "last_minus_mean",
+              "value": -4.926829268292693,
+              "source_columns": [
+                "sbp_last",
+                "sbp_mean"
+              ]
+            },
+            {
+              "variable": "dbp",
+              "pattern_type": "observed_range",
+              "value": 48.0,
+              "source_columns": [
+                "dbp_min",
+                "dbp_max"
+              ]
+            },
+            {
+              "variable": "dbp",
+              "pattern_type": "last_minus_mean",
+              "value": -15.048780487804876,
+              "source_columns": [
+                "dbp_last",
+                "dbp_mean"
+              ]
+            },
+            {
+              "variable": "map",
+              "pattern_type": "observed_range",
+              "value": 78.0,
+              "source_columns": [
+                "map_min",
+                "map_max"
+              ]
+            },
+            {
+              "variable": "map",
+              "pattern_type": "last_minus_mean",
+              "value": -22.658536585365837,
+              "source_columns": [
+                "map_last",
+                "map_mean"
+              ]
+            }
+          ],
+          "agent_output": {
+            "patient_id": 156906,
+            "status": "success",
+            "findings": [
+              {
+                "variable": "sbp_max",
+                "value": 199.0,
+                "flag": "unknown",
+                "rule_id": null
+              },
+              {
+                "variable": "map_max",
+                "value": 168.0,
+                "flag": "unknown",
+                "rule_id": null
+              },
+              {
+                "variable": "rr_last",
+                "value": 33.0,
+                "flag": "unknown",
+                "rule_id": null
+              },
+              {
+                "variable": "rr_max",
+                "value": 33.0,
+                "flag": "unknown",
+                "rule_id": null
+              },
+              {
+                "variable": "dbp_max",
+                "value": 110.0,
+                "flag": "unknown",
+                "rule_id": null
+              }
+            ]
+          },
+          "error_message": null
+        },
+        "laboratory": {
+          "patient_id": 156906,
+          "status": "success",
+          "raw_data": {
+            "patientunitstayid": 156906.0,
+            "BUN_first": null,
+            "creatinine_first": 0.8,
+            "glucose_first": null,
+            "potassium_first": null,
+            "sodium_first": null,
+            "BUN_mean": null,
+            "creatinine_mean": 0.8,
+            "glucose_mean": null,
+            "potassium_mean": null,
+            "sodium_mean": null,
+            "BUN_min": null,
+            "creatinine_min": 0.8,
+            "glucose_min": null,
+            "potassium_min": null,
+            "sodium_min": null,
+            "BUN_max": null,
+            "creatinine_max": 0.8,
+            "glucose_max": null,
+            "potassium_max": null,
+            "sodium_max": null,
+            "BUN_last": null,
+            "creatinine_last": 0.8,
+            "glucose_last": null,
+            "potassium_last": null,
+            "sodium_last": null
+          },
+          "range_evaluations": [
+            {
+              "variable": "creatinine_first",
+              "value": 0.8,
+              "flag": "unknown",
+              "rule_id": null
+            },
+            {
+              "variable": "creatinine_mean",
+              "value": 0.8,
+              "flag": "unknown",
+              "rule_id": null
+            },
+            {
+              "variable": "creatinine_min",
+              "value": 0.8,
+              "flag": "unknown",
+              "rule_id": null
+            },
+            {
+              "variable": "creatinine_max",
+              "value": 0.8,
+              "flag": "unknown",
+              "rule_id": null
+            },
+            {
+              "variable": "creatinine_last",
+              "value": 0.8,
+              "flag": "unknown",
+              "rule_id": null
+            }
+          ],
+          "patterns": [
+            {
+              "variable": "creatinine",
+              "pattern_type": "first_to_last_change",
+              "value": null,
+              "change_status": "insufficient_timepoints",
+              "first_value": 0.8,
+              "last_value": 0.8,
+              "first_offset_minutes": 379.0,
+              "last_offset_minutes": 379.0,
+              "distinct_timepoints": 1,
+              "raw_measurements": 1,
+              "repeated_timestamps": 0,
+              "conflicting_timestamps": 0,
+              "source_columns": [
+                "labresultoffset",
+                "labresult"
+              ],
+              "interpretation_limit": "First-to-last change only; not evidence of a sustained trend."
+            }
+          ],
+          "agent_output": {
+            "patient_id": 156906,
+            "status": "success",
+            "findings": []
+          },
+          "error_message": null
+        },
+        "clinical": {
+          "patient_id": 156906,
+          "status": "success",
+          "raw_data": {
+            "patientunitstayid": 156906,
+            "age": 52.0,
+            "gender": "Female",
+            "unit_type": "Med-Surg ICU",
+            "admission_source": "Emergency Department",
+            "admission_diagnosis": "Emphysema/bronchitis",
+            "diagnoses_0_24h": [],
+            "past_history": [
+              "No Health Problems"
+            ]
+          },
+          "evidence": [
+            {
+              "category": "age",
+              "value": "52"
+            },
+            {
+              "category": "gender",
+              "value": "Female"
+            },
+            {
+              "category": "unit_type",
+              "value": "Med-Surg ICU"
+            },
+            {
+              "category": "admission_source",
+              "value": "Emergency Department"
+            },
+            {
+              "category": "admission_diagnosis",
+              "value": "Emphysema/bronchitis"
+            },
+            {
+              "category": "past_history",
+              "value": "No Health Problems"
+            }
+          ],
+          "agent_output": {
+            "patient_id": 156906,
+            "status": "success",
+            "findings": [
+              {
+                "category": "admission_diagnosis",
+                "value": "Emphysema/bronchitis"
+              },
+              {
+                "category": "past_history",
+                "value": "No Health Problems"
+              },
+              {
+                "category": "age",
+                "value": "52"
+              },
+              {
+                "category": "gender",
+                "value": "Female"
+              },
+              {
+                "category": "unit_type",
+                "value": "Med-Surg ICU"
+              },
+              {
+                "category": "admission_source",
+                "value": "Emergency Department"
+              }
+            ]
+          },
+          "error_message": null
+        }
+      }
+    },
+    "apache_comparison": {
+      "status": "descriptive",
+      "versions": {
+        "IV": {
+          "status": "descriptive",
+          "apache_score": 18,
+          "apache_probability": 0.0068094464700123,
+          "ml_probability": 0.02536257542669773,
+          "difference": 0.01855312895668543,
+          "absolute_difference": 0.01855312895668543,
+          "difference_percentage_points": 1.8553128956685432,
+          "absolute_difference_percentage_points": 1.8553128956685432
+        },
+        "IVa": {
+          "status": "descriptive",
+          "apache_score": 18,
+          "apache_probability": 0.0073748140547851,
+          "ml_probability": 0.02536257542669773,
+          "difference": 0.01798776137191263,
+          "absolute_difference": 0.01798776137191263,
+          "difference_percentage_points": 1.798776137191263,
+          "absolute_difference_percentage_points": 1.798776137191263
+        }
+      },
+      "note": "Descriptive comparison of predicted ICU mortality estimates only. APACHE IV/IVa and this 24h XGBoost may differ in prediction timing and target population; this does not establish clinical agreement."
+    },
+    "llm_analysis": {
+      "status": "success",
+      "assessment": {
+        "findings": [
+          "The XGBoost model output probability is 0.02536257542669773, with a supplied base probability of 0.05131279255645831.",
+          "The supplied model warnings state that the academic research model is not validated for clinical use, predicted probabilities have not been formally calibrated, SHAP explains model behavior rather than causality, and imputed features are not actual clinical measurements.",
+          "There are 20 missing features reported for this prediction.",
+          "Validated observation summaries include rr_last 33.0, sbp_max 199.0, map_max 168.0, rr_max 33.0, and dbp_max 110.0, without supplied rule-based abnormality flags.",
+          "Validated pattern summaries include observed ranges for hr 28.0, rr 18.0, sbp 70.0, dbp 48.0, and map 78.0.",
+          "The laboratory pattern summary for creatinine has only one distinct timepoint, so first-to-last change is marked as insufficient_timepoints."
+        ],
+        "shap_interpretation": [
+          "SHAP values are supplied in log-odds units and should not be interpreted as direct probability-point changes.",
+          "The largest positive supplied SHAP contribution is rr_last with SHAP value 0.4086771607398987 and original value 33.0, increasing the model log-odds relative to the baseline.",
+          "The largest negative supplied SHAP contribution is age with SHAP value -0.38962993025779724 and original value 52.0, decreasing the model log-odds relative to the baseline.",
+          "BUN_max has SHAP value -0.20202691853046417 and BUN_last has SHAP value 0.16639505326747894, but both were imputed, so these are model inputs rather than measured clinical values.",
+          "Blood-pressure-related features have mixed SHAP directions: sbp_last -0.20201192796230316, sbp_mean -0.18442857265472412, and map_mean -0.14262641966342926 decrease model log-odds, while dbp_max 0.15110743045806885 and sbp_max 0.1251406967639923 increase model log-odds.",
+          "hr_last has SHAP value -0.12804155051708221 with original value 80.0, decreasing the model log-odds relative to the baseline."
+        ],
+        "apache_assessment": "APACHE IV is supplied as a descriptive reference estimate with score 18 and probability 0.0068094464700123; compared with the XGBoost probability 0.02536257542669773, the supplied absolute difference is 0.01855312895668543, or 1.8553128956685432 percentage points. APACHE IVa is supplied separately as a descriptive reference estimate with score 18 and probability 0.0073748140547851; compared with the XGBoost probability 0.02536257542669773, the supplied absolute difference is 0.01798776137191263, or 1.798776137191263 percentage points. These are descriptive comparisons only and do not establish clinical agreement because APACHE IV, APACHE IVa, and the 24h XGBoost model may differ in prediction timing and target population.",
+        "limitations": [
+          "This output is for academic research analysis only and is not clinically validated.",
+          "The XGBoost probability must not be used as a diagnosis, treatment recommendation, or causal explanation.",
+          "Predicted probabilities have not been formally calibrated according to the supplied warnings.",
+          "SHAP values describe model behavior for this prediction and do not establish causality.",
+          "Imputed features, including BUN_max and BUN_last, are not measured clinical values.",
+          "The case has sparse data, including 20 missing features and a creatinine pattern with only one distinct timepoint.",
+          "No reference ranges, clinical thresholds, or invented measurements are used in this interpretation."
+        ]
+      }
+    },
+    "warnings": [
+      "Academic research model not validated for clinical use.",
+      "Predicted probabilities have not been formally calibrated.",
+      "SHAP explains model behavior, not causality.",
+      "Imputed features are not actual clinical measurements.",
+      "APACHE comparison is descriptive; different timing and target populations may apply"
+    ]
+  },
+  "created_at": "2026-11-18T17:16:59.753108+00:00"
+}

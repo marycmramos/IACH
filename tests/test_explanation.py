@@ -245,3 +245,36 @@ def test_rejects_apache_ml_probability_mismatch():
     data['severity_result']['apache_comparison']['versions']['IV']['ml_probability'] = 0.45
     result = run_explanation_agent(data, use_llm=False)
     assert result['status'] == 'error'
+
+
+def test_critic_revision_context_in_llm_payload():
+    previous = deepcopy(REPORT)
+    client = FakeClient([REPORT])
+    result = run_explanation_agent(state(), llm_client=client, revision_context={
+        "previous_explanation": previous,
+        "issues": [{"code": "RISK_MISMATCH", "reason": "Correct probability", "suggestion": "Use 2.54%"}],
+    })
+    assert result["status"] == "success"
+    payload = json.loads(client.calls[0][1]["content"])
+    assert payload["revision_request"]["previous_explanation"] == previous
+    assert payload["revision_request"]["critic_issues"][0]["code"] == "RISK_MISMATCH"
+    assert "REVISION" in client.calls[0][0]["content"]
+    assert "patientunitstayid" not in payload
+
+
+def test_invalid_critic_feedback_rejected():
+    bad = run_explanation_agent(state(), use_llm=False, revision_context={"previous_explanation": REPORT, "issues": []})
+    assert bad["status"] == "error"
+    bad2 = run_explanation_agent(state(), use_llm=True, llm_client=FakeClient([REPORT]), revision_context={"previous_explanation": REPORT, "issues": []})
+    assert bad2["status"] == "error"
+
+
+def test_revision_keeps_probability_guard():
+    bad = {**REPORT, "mortality_summary": "The model risk is 25.4%."}
+    client = FakeClient([bad, REPORT])
+    outcome = run_explanation_agent(state(), llm_client=client, revision_context={
+        "previous_explanation": deepcopy(REPORT),
+        "issues": [{"code": "MISMATCH", "reason": "Correct probability"}],
+    })
+    assert outcome["status"] == "success"
+    assert len(client.calls) == 2
