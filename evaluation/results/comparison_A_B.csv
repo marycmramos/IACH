@@ -1,0 +1,7 @@
+episode_id,split,architecture,xgboost_probability,sections_ok,mortality_ok,shap_units_ok,shap_features_mentioned,shap_features_supplied,imputation_disclosed,apache_ok,technical_issue_count,technical_issues,llm_attempts
+141765,test,A_single,0.03417055681347847,True,True,True,10,10,True,True,0,,1
+141765,test,B_multi_no_critic,0.03417055681347847,True,True,True,10,10,True,True,0,,
+1694608,test,A_single,0.33972588181495667,True,True,True,10,10,True,True,0,,1
+1694608,test,B_multi_no_critic,0.33972588181495667,True,True,True,10,10,True,True,0,,
+176730,test,A_single,0.011178342625498772,True,True,True,10,10,True,True,0,,1
+176730,test,B_multi_no_critic,0.011178342625498772,True,True,True,10,10,True,True,0,,

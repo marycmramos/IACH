@@ -23,6 +23,54 @@ RESULTS = ROOT / "evaluation" / "results"
 REPORT_FIELDS = ("mortality_summary", "clinical_summary", "shap_summary", "overall_explanation", "limitations")
 PERCENT_RE = re.compile(r"(?<!\w)\d+(?:[.,]\d+)?\s*%")
 
+# Conservative, adjacent phrases only: avoids matching unrelated words in the
+# same paragraph (e.g. "last" and "blood pressure" in separate sentences).
+FEATURE_NAMES = {
+    "sbp": ("systolic blood pressure",),
+    "dbp": ("diastolic blood pressure",),
+    "map": ("mean arterial pressure",),
+    "rr": ("respiratory rate",),
+    "hr": ("heart rate",),
+    "sao2": ("oxygen saturation", "arterial oxygen saturation", "spo2"),
+    "bun": ("bun", "blood urea nitrogen"),
+    "glucose": ("glucose",),
+    "potassium": ("potassium",),
+    "creatinine": ("creatinine",),
+    "sodium": ("sodium",),
+}
+STAT_NAMES = {
+    "first": ("first", "initial"),
+    "last": ("last", "latest", "most recent"),
+    "min": ("minimum", "min", "lowest"),
+    "max": ("maximum", "max", "highest"),
+    "mean": ("mean", "average"),
+}
+
+
+def _feature_mentioned(feature: str, text: str) -> bool:
+    """Count canonical feature IDs or contiguous natural-language equivalents.
+
+    This is lexical coverage, NOT semantic grounding or a clinical quality score.
+    Unknown features only match their canonical ID; aliases remain conservative.
+    """
+    if not isinstance(feature, str) or not isinstance(text, str) or not feature:
+        return False
+    # Full canonical token (e.g. sbp_last). Avoid substring matches.
+    if re.search(r"(?<!\w)" + re.escape(feature) + r"(?!\w)", text, re.IGNORECASE):
+        return True
+    base, separator, stat = feature.lower().rpartition("_")
+    if not separator or base not in FEATURE_NAMES or stat not in STAT_NAMES:
+        return False
+    for name in FEATURE_NAMES[base]:
+        name_re = r"\s+".join(map(re.escape, name.split()))
+        for modifier in STAT_NAMES[stat]:
+            modifier_re = r"\s+".join(map(re.escape, modifier.split()))
+            for phrase in (modifier_re + r"\s+" + name_re,
+                           name_re + r"\s+" + modifier_re):
+                if re.search(r"(?<!\w)" + phrase + r"(?!\w)", text, re.IGNORECASE):
+                    return True
+    return False
+
 
 def _read_result(patient_id: str, name: str) -> dict | None:
     path = PATIENTS / patient_id / f"{name}.json"
@@ -102,7 +150,7 @@ def _inspect(result: dict, severity: dict) -> dict:
     shap_units_ok = ("log-odds" in shap_text or "log odds" in shap_text or "log_odds" in shap_text) and not bool(PERCENT_RE.search(shap_text))
     if not shap_units_ok:
         issues.append("SHAP units missing or SHAP section contains percentages")
-    feature_mentions = sum(bool(re.search(r"(?<!\w)" + re.escape(str(x.get("feature", ""))) + r"(?!\w)", shap_summary, flags=re.IGNORECASE)) for x in feats if x.get("feature"))
+    feature_mentions = sum(_feature_mentioned(x.get("feature", ""), shap_summary) for x in feats if isinstance(x, dict) and x.get("feature"))
     missing_imputation_disclosure = any(x.get("was_imputed") is True for x in feats) and not any(
         word in (shap_text + " " + " ".join(map(str, report.get("limitations", []))).lower())
         for word in ("imput", "missing")
