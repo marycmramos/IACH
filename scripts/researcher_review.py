@@ -217,6 +217,58 @@ def show_technical_report(version: dict) -> None:
     show_feedback_compliance(critic)
 
 
+
+def show_initial_overview(session: dict) -> None:
+    """Read-only landing overview, derived solely from the current saved version."""
+    version = current_version(session)
+    result = version.get("explanation") or {}
+    report = result.get("explanation") or {}
+    critic = version.get("critic") or {}
+    prediction = result.get("mortality_prediction") or {}
+
+    print("\n========== IACH | Patient Overview ==========")
+    print(f"Patient: {session['patientunitstayid']} | Version: {version['version']}")
+    print(f"Critic: {critic.get('status', 'unknown')} | Human: {session.get('status', 'unknown')}")
+    feedback = critic.get('feedback_compliance')
+    if isinstance(feedback, dict):
+        print(f"Human feedback evaluation: {feedback.get('status', 'review_error')}")
+    probability = prediction.get('probability')
+    if isinstance(probability, (int, float)) and not isinstance(probability, bool) and 0 <= probability <= 1:
+        print(f"\nEstimated ICU mortality: {probability * 100:.2f}%")
+    else:
+        print("\nEstimated ICU mortality: unavailable")
+    print("Research model estimate only; not a clinically validated prognosis.")
+
+    features = (result.get('shap_explanation') or {}).get('top_features') or []
+    print("\nMain model contributions (SHAP):")
+    any_features = False
+    for direction, label in (("increases", "Higher model output"),
+                             ("decreases", "Lower model output")):
+        matches = [f for f in features if isinstance(f, dict) and f.get('direction') == direction][:2]
+        for feature in matches:
+            any_features = True
+            name = _feature_name(str(feature.get('feature', 'unknown')))
+            detail = " [imputed; not measured]" if feature.get('was_imputed') else ""
+            print(f"  {label}: {name}{detail}")
+    if not any_features:
+        print("  No main SHAP contributions available.")
+    print("SHAP explains model behavior, not clinical causality.")
+
+    limitations = report.get('limitations') or []
+    print("\nImportant limitations:")
+    if limitations:
+        for item in limitations[:3]:
+            print(f"  - {readable_text(item)}")
+        if len(limitations) > 3:
+            print(f"  ... plus {len(limitations) - 3} more in Accessible Explanation / Full Report.")
+    else:
+        print("  No limitations supplied; consult the full report before approving.")
+    if critic.get('status') != 'approved':
+        print("[WARNING] Factual review is not approved; researcher approval is unavailable.")
+    print("\nThe full report, technical data and human actions are available in the menu.")
+    print("=============================================\n")
+
+
 def show_history(session: dict) -> None:
     print(f"\nAutomatic run: {session['run_id']}")
     for version in session["versions"]:
@@ -230,19 +282,28 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="IACH investigator review (terminal)")
     parser.add_argument("patient_id", type=int, help="eICU patientunitstayid")
     parser.add_argument("--reviewer", default="researcher", help="Name or identifier of the reviewer")
+    parser.add_argument("--overview", action="store_true", help="Show initial overview before the menu")
     args = parser.parse_args()
+    run_review_cli(args.patient_id, reviewer=args.reviewer, show_overview=args.overview)
+
+
+def run_review_cli(patient_id: int, reviewer: str = "researcher", show_overview: bool = True) -> None:
+    """Use after a saved pipeline run; no additional model or API calls on launch."""
     try:
-        session = get_review(args.patient_id)
+        session = get_review(patient_id)
     except HumanReviewError as exc:
-        parser.exit(1, f"[ERROR] {exc}\nRun the regular Orchestrator for this patient first.\n")
+        print(f"[ERROR] {exc}\nRun the regular Orchestrator for this patient first.")
+        return
 
     print("\n=== IACH | Researcher Review ===")
+    if show_overview:
+        show_initial_overview(session)
     while True:
         version = current_version(session)
         critic = version["critic"]
         feedback_status = (critic.get("feedback_compliance") or {}).get("status")
         feedback_label = f" | Feedback: {feedback_status}" if feedback_status else ""
-        print(f"\nPatient: {args.patient_id} | Version: {version['version']} | Critic: {critic['status']} | Human: {session['status']}{feedback_label}")
+        print(f"\nPatient: {patient_id} | Version: {version['version']} | Critic: {critic['status']} | Human: {session['status']}{feedback_label}")
         print("1. Approve report\n2. Request revision\n3. View full report\n4. View history\n5. View technical details\n6. View accessible explanation\n7. Exit")
         try:
             choice = input("Option: ").strip()
@@ -259,13 +320,13 @@ def main() -> None:
                     print(f"[NOTICE] Human feedback evaluation: {check.get('status')}. "
                           "Please read the unmet requirements before approving.")
                     show_feedback_compliance(critic)
-                print(f"You are about to approve version {version['version']} for patient {args.patient_id}.")
+                print(f"You are about to approve version {version['version']} for patient {patient_id}.")
                 print("This is approval of a research report, NOT clinical validation.")
                 confirmation = input("Confirm researcher approval? [y/N]: ").strip().lower()
                 if confirmation not in {"y", "yes"}:
                     print("[CANCELLED] No approval was recorded.")
                     continue
-                session = approve_review(args.patient_id, args.reviewer)
+                session = approve_review(patient_id, reviewer)
                 print(f"[OK] Investigator approved version {session['approved_version']}.")
                 print("This is human approval of a research report, not clinical validation.")
             elif choice == "2":
@@ -278,7 +339,7 @@ def main() -> None:
                     lines.append(line)
                 feedback = "\n".join(lines)
                 print("[RUN] Explanation revision and real Critic review...")
-                session = request_revision(args.patient_id, feedback, args.reviewer)
+                session = request_revision(patient_id, feedback, reviewer)
                 latest_critic = current_version(session)["critic"]
                 print(f"[OK] New version {session['current_version']}, Critic Agent: {latest_critic['status']}")
                 print(f"\n========== REVISED EXPLANATION — VERSION {session['current_version']} ==========")
@@ -305,7 +366,7 @@ def main() -> None:
                 print("Invalid option; enter 1–7.")
         except HumanReviewError as exc:
             print(f"[ERROR] {exc}")
-            session = get_review(args.patient_id)
+            session = get_review(patient_id)
         except (EOFError, KeyboardInterrupt):
             print("\n[EXIT] Session saved.")
             return
