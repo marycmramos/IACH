@@ -1,10 +1,11 @@
-"""Compare A (single agent) and B (multi-agent before Critic).
+"""Compare A (single), B (multi without Critic), C (multi with Critic).
 
 Run from project root:
     python -u evaluation/compare_agents.py
     python -u evaluation/compare_agents.py --include-train
     python -u evaluation/compare_agents.py --patient-ids 176730 141765
 
+Requires a matching, approved Critic review for C; checks technical properties only.
 Only checks verifiable structural/numeric/textual properties. It is NOT clinical
 validation, and absence of warnings does not establish factual correctness.
 """
@@ -193,32 +194,121 @@ def _inspect(result: dict, severity: dict) -> dict:
     }
 
 
+def _critic_and_cycle(patient_id: str) -> tuple[dict | None, dict | None, str]:
+    """Read the CURRENT Critic result, state and saved revision rounds.
+
+    Approvals are NOT normal agent 'success' values. A valid C arm requires
+    a matching approved critic, an approved review cycle, and matching round
+    history, avoiding stale approvals from earlier runs.
+    """
+    folder = PATIENTS / patient_id
+    try:
+        wrapped = json.loads((folder / "critic.json").read_text(encoding="utf-8"))
+        state = json.loads((folder / "patient_state.json").read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError):
+        return None, None, "missing_or_invalid_critic_or_state"
+    if not isinstance(wrapped, dict) or not isinstance(state, dict):
+        return None, None, "malformed_critic_or_state"
+    critic = wrapped.get("result")
+    cycle = state.get("review_cycle")
+    if (str(wrapped.get("patientunitstayid")) != patient_id
+            or str(state.get("patientunitstayid")) != patient_id
+            or state.get("status") != "success"
+            or not isinstance(critic, dict)
+            or not isinstance(cycle, dict)
+            or str(critic.get("patientunitstayid")) != patient_id
+            or critic.get("status") != "approved"
+            or critic.get("approved") is not True
+            or state.get("critic", {}).get("status") != "approved"
+            or cycle.get("stop_reason") != "approved"):
+        return None, None, "critic_not_approved_or_inconsistent"
+    history_path = cycle.get("history_path")
+    run_id = cycle.get("run_id")
+    if (not isinstance(history_path, str) or not isinstance(run_id, str)
+            or not run_id or ".." in Path(history_path).parts):
+        return None, None, "invalid_revision_history_path"
+    expected = Path("outputs") / "patients" / patient_id / "revision_runs" / run_id
+    if Path(history_path) != expected:
+        return None, None, "revision_history_mismatch"
+    rounds = cycle.get("history")
+    revisions = cycle.get("revisions_used")
+    if (not isinstance(rounds, list) or not rounds
+            or not isinstance(revisions, int) or isinstance(revisions, bool)
+            or revisions != len(rounds) - 1
+            or any(not isinstance(entry, dict) for entry in rounds)
+            or rounds[-1].get("critic_status") != "approved"
+            or cycle.get("human_review_required") is not True):
+        return None, None, "invalid_revision_cycle"
+    final_round = ROOT / expected / f"round_{len(rounds)-1:02d}.json"
+    try:
+        stored_round = json.loads(final_round.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError):
+        return None, None, "missing_final_revision_round"
+    if (not isinstance(stored_round, dict)
+            or stored_round.get("round") != len(rounds)-1
+            or stored_round.get("critic") != critic):
+        return None, None, "final_revision_critic_mismatch"
+    return critic, cycle, ""
+
+
 def compare(patient_id: str, split: str) -> list[dict]:
     severity = _read_result(patient_id, "severity")
     a = _read_result(patient_id, "single_agent")
-    b = _read_result(patient_id, "explanation")
-    if severity is None or a is None or b is None:
-        print(f"[SKIP] {patient_id}: missing successful " + ", ".join(
-            name for name, item in (("severity", severity), ("single_agent", a), ("explanation", b)) if item is None
-        ))
+    b = _read_result(patient_id, "explanation_B")
+    c = _read_result(patient_id, "explanation")
+    critic, cycle, critic_error = _critic_and_cycle(patient_id)
+    required = {"severity": severity, "single_agent": a,
+                "explanation_B": b, "explanation": c}
+    missing = [name for name, item in required.items() if item is None]
+    if missing or critic is None or cycle is None:
+        reason = ", ".join(missing + ([critic_error] if critic_error else []))
+        print(f"[SKIP] {patient_id}: {reason}")
         return []
     try:
-        _numeric_probability(severity)
+        prob = _numeric_probability(severity)
     except ValueError as exc:
         print(f"[SKIP] {patient_id}: {exc}")
         return []
+    # Ensure that the saved C report is the one approved in the current cycle.
+    history = ROOT / cycle["history_path"] / f"round_{len(cycle['history'])-1:02d}.json"
+    try:
+        last_round = json.loads(history.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError):
+        print(f"[SKIP] {patient_id}: unreadable final revision")
+        return []
+    if (not isinstance(last_round.get("explanation"), dict)
+            or last_round["explanation"].get("explanation") != c.get("explanation")):
+        print(f"[SKIP] {patient_id}: C explanation differs from the approved revision")
+        return []
+
     results = []
-    for arm, obj in (("A_single", a), ("B_multi_no_critic", b)):
-        # Ensure both output probabilities are the same numerical reference.
-        output_prob = (obj.get("mortality_prediction") or {}).get("probability")
+    for arm, obj in (("A_single", a), ("B_multi_no_critic", b),
+                     ("C_multi_with_critic", c)):
         checks = _inspect(obj, severity)
-        consistent_reference = isinstance(output_prob, (int, float)) and not isinstance(output_prob, bool) and math.isclose(output_prob, _numeric_probability(severity), abs_tol=1e-10, rel_tol=0)
-        if not consistent_reference:
+        output_prob = (obj.get("mortality_prediction") or {}).get("probability")
+        same_prob = (isinstance(output_prob, (int, float))
+                     and not isinstance(output_prob, bool)
+                     and math.isclose(output_prob, prob, abs_tol=1e-10, rel_tol=0))
+        if not same_prob:
             checks["technical_issue_count"] += 1
-            checks["technical_issues"] += (" | " if checks["technical_issues"] else "") + "Output probability differs from Severity"
-        results.append({"episode_id": patient_id, "split": split, "architecture": arm,
-                        "xgboost_probability": _numeric_probability(severity), **checks})
-    print(f"[OK] {patient_id}: A issues={results[0]['technical_issue_count']}; B issues={results[1]['technical_issue_count']}")
+            checks["technical_issues"] += ((" | " if checks["technical_issues"] else "")
+                                           + "Output probability differs from Severity")
+        row = {"episode_id": patient_id, "split": split, "architecture": arm,
+               "xgboost_probability": prob, **checks,
+               "critic_status": "", "critic_issues": "",
+               "revisions_used": "", "stop_reason": "",
+               "human_review_required": "", "critic_run_id": ""}
+        if arm == "C_multi_with_critic":
+            row.update({"critic_status": critic["status"],
+                        "critic_issues": len(critic.get("issues") or []),
+                        "revisions_used": cycle["revisions_used"],
+                        "stop_reason": cycle["stop_reason"],
+                        "human_review_required": cycle["human_review_required"],
+                        "critic_run_id": cycle["run_id"]})
+        results.append(row)
+    print(f"[OK] {patient_id}: " + "; ".join(
+        f"{r['architecture']} issues={r['technical_issue_count']}" for r in results
+    ) + f"; Critic={critic['status']}, revisions={cycle['revisions_used']}")
     return results
 
 
@@ -239,15 +329,15 @@ def main() -> None:
             continue
         rows.extend(compare(str(patient_id), split))
     if not rows:
-        print("No complete A/B pairs yet. Run the single-agent baseline for eligible test episodes.")
+        print("No complete A/B/C trios yet. Check explanation_B.json and the latest approved Critic cycle.")
         return
     RESULTS.mkdir(parents=True, exist_ok=True)
-    output = RESULTS / "comparison_A_B.csv"
+    output = RESULTS / "comparison_A_B_C.csv"
     with output.open("w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
         writer.writeheader()
         writer.writerows(rows)
-    print(f"\nCompared {len(rows) // 2} episodes ({len(rows)} architecture outputs)")
+    print(f"\nCompared {len(rows) // 3} episodes ({len(rows)} architecture outputs)")
     print(f"CSV saved: {output}")
     print("Note: checks are technical only, not clinical validation or proof of architectural superiority.")
 
