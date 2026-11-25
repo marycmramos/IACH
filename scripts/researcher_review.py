@@ -18,12 +18,12 @@ def show_critic_issues(critic: dict) -> None:
     issues = critic.get("issues") or []
     if not issues:
         if critic.get("status") == "approved":
-            print("[CRITIC AGENT] Approved — No issues identified.")
+            print("[CRITIC AGENT] Approved - No issues identified.")
         elif critic.get("status") == "review_error":
             print("[CRITIC AGENT] Review incomplete; this is NOT an approval.")
         return
 
-    print(f"\n[CRITIC AGENT] Review required — identified {len(issues)} issue(s):")
+    print(f"\n[CRITIC AGENT] Review required - identified {len(issues)} issue(s):")
     for number, issue in enumerate(issues, start=1):
         print(f"\n{number}. {issue.get('code', 'unknown')} [{issue.get('severity', '?')}]")
         for label, key in (("Claim", "claim"), ("Reason", "reason"),
@@ -77,7 +77,7 @@ def show_feedback_compliance(critic: dict) -> None:
     if not isinstance(check, dict):
         return  # Original automatic run or older review version.
     status = check.get("status", "review_error")
-    print(f"\n[CRITIC AGENT — HUMAN FEEDBACK] {status}")
+    print(f"\n[CRITIC AGENT - HUMAN FEEDBACK] {status}")
     if check.get("summary"):
         print(f"  Summary: {check['summary']}")
     for index, requirement in enumerate(check.get("requirements") or [], 1):
@@ -298,6 +298,9 @@ def run_review_cli(patient_id: int, reviewer: str = "researcher", show_overview:
     print("\n=== IACH | Researcher Review ===")
     if show_overview:
         show_initial_overview(session)
+    print("\n========== CURRENT EXPLANATION ==========")
+    show_accessible_report(current_version(session))
+    print("\n[INFO] This research report requires explicit human approval.")
     while True:
         version = current_version(session)
         critic = version["critic"]
@@ -342,7 +345,7 @@ def run_review_cli(patient_id: int, reviewer: str = "researcher", show_overview:
                 session = request_revision(patient_id, feedback, reviewer)
                 latest_critic = current_version(session)["critic"]
                 print(f"[OK] New version {session['current_version']}, Critic Agent: {latest_critic['status']}")
-                print(f"\n========== REVISED EXPLANATION — VERSION {session['current_version']} ==========")
+                print(f"\n========== REVISED EXPLANATION - VERSION {session['current_version']} ==========")
                 revised = current_version(session)
                 show_accessible_report(revised)
                 print("\n====================================================")
